@@ -25,3 +25,6 @@ steps:
 images:
   # 빌드된 이미지를 GCR에 기록
   - 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA'
+
+options:
+  logs_bucket: 'gs://gcr.io'
