@@ -1,3 +1,7 @@
+options:
+  # 로그 버킷의 기본 동작을 REGIONAL_USER_OWNED_BUCKET으로 설정
+  default_logs_bucket_behavior: REGIONAL_USER_OWNED_BUCKET
+
 steps:
   # Docker 이미지를 빌드
   - name: 'gcr.io/cloud-builders/docker'
@@ -25,6 +29,3 @@ steps:
 images:
   # 빌드된 이미지를 GCR에 기록
   - 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA'
-
-options:
-  logs_bucket: 'gs://gcr.io'
