@@ -1,17 +1,27 @@
 steps:
+  # Docker 이미지를 빌드
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA', '.']
+  
+  # Docker 이미지를 푸시
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA']
+
+  # Cloud Run에 배포
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
-    args: ['run', 'deploy', 'yolo-app',
-           '--image', 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA',
-           '--region', 'asia-northeast3',
-           '--platform', 'managed',
-           '--allow-unauthenticated']
+    args:
+      - 'run'
+      - 'deploy'
+      - 'yolo-app'
+      - '--image'
+      - 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA'
+      - '--region'
+      - 'asia-northeast3'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
 
 images:
-  - 'gcr.io/sunlit-context-430703-g8/asia-northeast3:$COMMIT_SHA'
-options:
-  logs_bucket: gs://gcr.io
+  # 빌드된 이미지를 GCR에 기록
+  - 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA'
