@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sushi Plate Detector with WebSocket</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* 기존 CSS 스타일 유지 */
+        body {
+            display: flex;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #left-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 20px;
+        }
+        #video-container {
+            position: relative;
+            width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+        #video, #videoCancas, #textCancas {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            display: block;
+        }
+        #videoCanvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 1;
+        }
+        #textCanvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+        #results-container {
+            max-width: 400px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+        }
+        .dropbtn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        #modelSelect, #fpsInput { 
+            margin: 10px 0;
+        }
+        @media screen and (max-width: 768px) {
+            body {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px;
+            }
+            #video-container, #results-container {
+                width: 100%;
+                margin-right:0;
+            }
+            video, canvas {
+                width: 100%;
+                height: auto;
+            }
+            #results-container {
+                margin-top: 20px;
+            }
+            table {
+                font-size: 14px;
+            }
+            .dropbtn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="left-container">
+        <h1>Sushi Plate Detector WebSocket 수정2 추론 시작 후 이미지 크기 확인ㄱㄱ</h1>
+        <div style="display: flex; align-items: center;">
+            <select id="modelSelect">
+                <option value="yolov8n">YOLOv8n</option>
+                <option value="yolov8s">YOLOv8s</option>
+                <option value="yolov8m">YOLOv8m</option>
+                <option value="yolov9s">YOLOv9s</option>
+                <option value="yolo11s">YOLO11s</option>
+            </select>
+            
+            <label for="fpsInput" style="margin-left: 10px;">FPS:</label>
+            <input type="number" id="fpsInput" min="1" max="50" value="1" style="margin-left: 5px;">
+        </div>
+        
+        <div id="video-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="videoCanvas"></canvas>
+            <canvas id="textCanvas"></canvas>
+        </div>
+    </div>
+    <div id="results-container">
+        <button id="startInference">Start Inference</button>
+        <button id="stopInference">Stop Inference</button>
+        <button id="3seconds">3초 추론 후 결과 종합</button>
+        <h2>Detection Results</h2>
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Plate Color</th>
+                    <th>Price per Plate</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        
+        <div class="dropdown">            
+            <button id="dropbtn">Add Result</button>
+            <div class="dropdown-content">
+                <a href="#" onclick="addItem('black', 10000)">black</a>
+                <a href="#" onclick="addItem('blue', 9000)">blue</a>
+                <a href="#" onclick="addItem('green', 8000)">green</a>
+                <a href="#" onclick="addItem('orange', 7000)">orange</a>
+                <a href="#" onclick="addItem('orange-rec', 6000)">orange-rec</a>
+                <a href="#" onclick="addItem('orange-vivid', 5000)">orange-vivid</a>
+                <a href="#" onclick="addItem('purple', 4000)">purple</a>
+                <a href="#" onclick="addItem('red', 3000)">red</a>
+                <a href="#" onclick="addItem('yellow', 2000)">yellow</a>
+                <a href="#" onclick="addItem('yellow-rec', 1000)">yellow-rec</a>
+            </div>
+        </div>
+
+        <h3>총 접시 개수: <span id="totalPlates">0</span> 개</h3>
+        <h3>합산 금액: <span id="totalPrice">0</span> 원</h3>
+    </div>
+
+    <script>
+        let ws = null;
+        const video = document.getElementById('video');
+        const videoCanvas = document.getElementById('videoCanvas');
+        const videoContext = videoCanvas.getContext('2d');
+        const textCanvas = document.getElementById('textCanvas');
+        const textContext = textCanvas.getContext('2d');
+        const modelSelect = document.getElementById('modelSelect');
+        const fpsInput = document.getElementById('fpsInput');
+        const resultsTable = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
+        const totalPriceSpan = document.getElementById('totalPrice');
+        const totalPlatesSpan = document.getElementById('totalPlates');
+
+        let isInferenceRunning = false;
+        let lastInferenceTime = 0;
+
+        function connectWebSocket() {
+            // WebSocket 연결 (wss:// 프로토콜로 수정)
+            const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+            ws = new WebSocket(`${protocol}://${window.location.host}/ws`);
+            
+            ws.onopen = function() {
+                console.log('WebSocket connected');
+            };
+
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                if (data.error) {
+                    console.error('Server error:', data.error);
+                    return;
+                }
+                drawResultTexts(data.results);
+                updateResultsTable(data.results);
+            };
+
+            ws.onclose = function() {
+                console.log('WebSocket disconnected');
+                if (isInferenceRunning) {
+                    setTimeout(connectWebSocket, 1000); // 재연결 시도
+                }
+            };
+
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" }
+        })
+        .then(function(stream) {
+            video.srcObject = stream;
+        })
+        .catch(function(error) {
+            console.error("Error accessing the camera: ", error);
+        });
+
+        // 비디오가 로드될 때 캔버스 크기를 설정
+        video.addEventListener('loadedmetadata', function() {
+            // 비디오의 실제 크기를 가져옵니다
+            const videoWidth = video.videoWidth;
+            const videoHeight = video.videoHeight;
+            
+            // 캔버스들의 해상도를 비디오와 동일하게 설정
+            videoCanvas.width = videoWidth;
+            videoCanvas.height = videoHeight;
+            textCanvas.width = videoWidth;
+            textCanvas.height = videoHeight;
+        });
+
+        function startInference() {
+            if (!isInferenceRunning) return;
+
+            const currentTime = Date.now();
+            const fps = parseInt(fpsInput.value);
+            const intervalMs = 1000 / fps;
+
+            if (currentTime - lastInferenceTime < intervalMs) {
+                requestAnimationFrame(startInference);
+                return;
+            }
+
+            lastInferenceTime = currentTime;
+            
+            videoContext.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
+            const imageData = videoCanvas.toDataURL('image/jpeg');
+            
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    image: imageData.split(',')[1],
+                    model: modelSelect.value
+                }));
+            }
+
+            requestAnimationFrame(startInference);
+        }
+
+        document.getElementById('startInference').addEventListener('click', function() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                connectWebSocket();
+            }
+            isInferenceRunning = true;
+            requestAnimationFrame(startInference);
+        });
+
+        document.getElementById('stopInference').addEventListener('click', function() {
+            isInferenceRunning = false;
+            if (ws) {
+                ws.close();
+            }
+        });
+
+        // 드롭다운 버튼 클릭 시 드롭다운 열기/닫기
+        document.getElementById("dropbtn").onclick = function() {
+            var dropdownContent = document.getElementById("dropdownContent");
+            dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+        }
+
+        const platePrices = {
+            'black': 10000,
+            'blue': 9000,
+            'green': 8000,
+            'orange': 7000,
+            'orange-rec': 6000,
+            'orange-vivid': 5000,
+            'purple': 4000,
+            'red': 3000,
+            'yellow': 2000,
+            'yellow-rec': 1000
+        };
+
+        function drawResultTexts(results) {
+            textContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
+            results.forEach(result => {
+                const coords = result.coords;
+                const label = `${result.label} (${Math.round(result.confidence * 100)}%)`;
+
+                const x1 = coords[0];
+                const y1 = coords[1];
+                const x2 = coords[2];
+                const y2 = coords[3];
+
+                const color = getColorForLabel(result.label);
+                
+                const textX = (x1 + x2) / 2;
+                const textY = y2 - 15;
+
+                textContext.fillStyle = color;
+                textContext.font = '16px Arial';
+                textContext.textAlign = 'center';
+                textContext.fillText(label, textX, textY);
+            });
+        }
+
+        function getColorForLabel(label) {
+            const colorMapping = {
+                'black': 'rgb(0, 0, 0)',
+                'blue': 'rgb(0, 0, 255)',
+                'green': 'rgb(0, 255, 0)',
+                'orange': 'rgb(255, 165, 0)',
+                'orange-rec': 'rgb(255, 165, 55)',
+                'orange-vivid': 'rgb(255, 165, 100)',
+                'red': 'rgb(255, 0, 0)',
+                'yellow': 'rgb(255, 255, 0)',
+                'yellow-rec': 'rgb(255, 255, 50)',
+                'purple': 'rgb(128, 0, 128)'
+            };
+            return colorMapping[label] || 'rgb(255, 255, 255)';
+        }
+
+        function updateResultsTable(results) {
+            results.sort((a, b) => a.coords[3] - b.coords[3]);
+            resultsTable.innerHTML = '';
+
+            results.forEach(result => {
+                const label = result.label;
+                const price = platePrices[label] || 0;
+
+                const row = resultsTable.insertRow();
+                row.insertCell(0).textContent = label;
+                row.insertCell(1).textContent = price + ' 원';
+                
+                const deleteCell = row.insertCell(2);
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '삭제';
+                deleteButton.onclick = () => removeItem(deleteButton);
+                deleteCell.appendChild(deleteButton);
+            });
+
+            updateTotalPrice();
+        }
+
+        function updateTotalPrice() {
+            let totalPrice = 0;
+            let totalPlates = 0;
+            const rows = resultsTable.rows;
+
+            for (let i = 0; i < rows.length; i++) {
+                const priceText = rows[i].cells[1].textContent;
+                const priceValue = parseInt(priceText.replace(' 원', ''), 10) || 0;
+                totalPrice += priceValue;
+            }
+
+            totalPlates = rows.length;
+            totalPriceSpan.textContent = totalPrice;
+            totalPlatesSpan.textContent = totalPlates;
+        }
+
+        function addItem(name, value) {
+            const table = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+
+            const cell1 = newRow.insertCell(0);
+            const cell2 = newRow.insertCell(1);
+            const cell3 = newRow.insertCell(2);
+
+            cell1.innerHTML = name;
+            cell2.innerHTML = value + ' 원';
+            cell3.innerHTML = '<button onclick="removeItem(this)">삭제</button>';
+
+            updateTotalPrice();
+            
+            // 드롭다운 닫기
+            document.getElementById("dropdownContent").style.display = 'none';
+        }
+
+        function removeItem(button) {
+            const row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+            updateTotalPrice();
+        }
+    </script>
+</body>
+</html>
