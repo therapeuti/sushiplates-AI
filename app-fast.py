@@ -78,6 +78,7 @@ manager = ConnectionManager()
 # 스레드풀 생성
 executor = ThreadPoolExecutor(max_workers=8)
 
+
 def process_image(image_data: str, model_name: str) -> dict:
     try:
         # 이미지 디코딩
@@ -95,18 +96,20 @@ def process_image(image_data: str, model_name: str) -> dict:
         # height, width, _ = frame.shape  # 이미지의 높이와 너비 가져오기
         # print(f"Image size (bytes): {image_size}, Width: {width}, Height: {height}")
 
-        results = model.predict(frame, save=False, conf=0.6, verbose=False)
+        results = model.track(frame, save=False, persist=True, conf=0.6, verbose=False) # 객체 추적하려면 predict이 아니라 track를 써야함.
 
         inference_results = []
 
         if results:
             for box in results[0].boxes:
+                track_id = int(box.id) if box.id is not None else None
                 class_id = int(box.cls)
                 label = model.names[class_id]
                 confidence = box.conf.item()
                 coords = box.xyxy[0].cpu().numpy().tolist()
 
                 inference_results.append({
+                    "track_id": track_id,
                     "label": label,
                     "confidence": confidence,
                     "coords": coords,

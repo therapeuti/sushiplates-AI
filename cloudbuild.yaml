@@ -1,16 +1,16 @@
 options:
-  # 로그 버킷의 기본 동작을 REGIONAL_USER_OWNED_BUCKET으로 설정
   default_logs_bucket_behavior: REGIONAL_USER_OWNED_BUCKET
-
+  machineType: 'N1_HIGHCPU_8'  # 더 높은 성능의 빌더 머신 사용
 steps:
   # Docker 이미지를 빌드
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA', '.']
+    timeout: '1800s'  # 빌드 시간 증가
   
   # Docker 이미지를 푸시
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA']
-
+  
   # Cloud Run에 배포
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
@@ -25,7 +25,12 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
-
+      - '--memory'
+      - '2Gi'  # 메모리 할당 증가
+      - '--cpu'
+      - '2'    # CPU 할당 증가
+      - '--timeout'
+      - '300'  # 요청 타임아웃 증가
 images:
-  # 빌드된 이미지를 GCR에 기록
   - 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA'
+timeout: '3600s'  # 전체 빌드 프로세스 타임아웃 증가

@@ -129,7 +129,7 @@
 </head>
 <body>
     <div id="left-container">
-        <h1>Sushi Plate Detector WebSocket 수정: add item 드롭다운</h1>
+        <h1>Sushi Plate Detector WebSocket 수정3 3초 간 추론 추가</h1>
         <div style="display: flex; align-items: center;">
             <select id="modelSelect">
                 <option value="yolov8n">YOLOv8n</option>
@@ -201,6 +201,10 @@
 
         let isInferenceRunning = false;
         let lastInferenceTime = 0;
+        let aggregatedResults = [];
+        let inferenceTimeout = null;
+        let totalInferenceFrames = 0;
+        let isCollectingResults = false;
 
         function connectWebSocket() {
             // WebSocket 연결 (wss:// 프로토콜로 수정)
@@ -217,8 +221,13 @@
                     console.error('Server error:', data.error);
                     return;
                 }
-                drawResultTexts(data.results);
-                updateResultsTable(data.results);
+                if (isCollectingResults) {
+                    totalInferenceFrames++;
+                    aggregatedResults.push(...data.results);
+                } else {
+                    drawResultTexts(data.results);
+                    updateResultsTable(data.results);
+                }
             };
 
             ws.onclose = function() {
@@ -321,8 +330,8 @@
             textContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
             results.forEach(result => {
                 const coords = result.coords;
-                const label = `${result.label} (${Math.round(result.confidence * 100)}%)`;
-
+                const label = `${result.track_id} ${result.label} (${Math.round(result.confidence * 100)}%)`;
+                
                 const x1 = coords[0];
                 const y1 = coords[1];
                 const x2 = coords[2];
@@ -417,6 +426,150 @@
             row.parentNode.removeChild(row);
             updateTotalPrice();
         }
+
+
+        function processAggregatedResults(results, totalFrames) {
+            // Track ID별로 결과를 그룹화
+            const trackGroups = new Map();
+            
+            results.forEach(result => {
+                if (!trackGroups.has(result.track_id)) {
+                    trackGroups.set(result.track_id, []);
+                }
+                trackGroups.get(result.track_id).push(result);
+            });
+
+            const finalResults = [];
+
+            trackGroups.forEach((trackResults, trackId) => {
+                // 해당 track_id가 전체 프레임의 1/2 이상 감지되었는지 확인
+                if (trackResults.length <= totalFrames / 2) {
+                    return;
+                }
+
+                // 라벨별 통계 수집
+                const labelStats = new Map();
+                trackResults.forEach(result => {
+                    if (!labelStats.has(result.label)) {
+                        labelStats.set(result.label, {
+                            count: 0,
+                            totalConfidence: 0,
+                            coords: result.coords
+                        });
+                    }
+                    const stats = labelStats.get(result.label);
+                    stats.count++;
+                    stats.totalConfidence += result.confidence;
+                    stats.coords = result.coords; // 마지막 좌표 사용
+                });
+
+                // 라벨이 모두 동일한지 확인
+                if (labelStats.size === 1) {
+                    const [label, stats] = labelStats.entries().next().value;
+                    finalResults.push({
+                        track_id: trackId,
+                        label: label,
+                        confidence: stats.totalConfidence / stats.count,
+                        coords: stats.coords
+                    });
+                    return;
+                }
+
+                // 가장 빈도가 높은 라벨 찾기
+                let maxCount = 0;
+                let maxLabel = '';
+                let maxAvgConfidence = 0;
+                labelStats.forEach((stats, label) => {
+                    if (stats.count > maxCount) {
+                        maxCount = stats.count;
+                        maxLabel = label;
+                        maxAvgConfidence = stats.totalConfidence / stats.count;
+                    }
+                });
+
+                // 가장 높은 평균 신뢰도를 가진 라벨 찾기
+                let maxConfidenceLabel = '';
+                let maxConfidence = 0;
+                labelStats.forEach((stats, label) => {
+                    const avgConfidence = stats.totalConfidence / stats.count;
+                    if (avgConfidence > maxConfidence) {
+                        maxConfidence = avgConfidence;
+                        maxConfidenceLabel = label;
+                    }
+                });
+
+                // 최빈값이 전체의 2/3 이상인지 확인
+                if (maxCount >= (trackResults.length * 2 / 3)) {
+                    // 최빈값 라벨과 최고 신뢰도 라벨이 같은 경우
+                    if (maxLabel === maxConfidenceLabel) {
+                        finalResults.push({
+                            track_id: trackId,
+                            label: `${maxLabel} check!`,
+                            confidence: maxAvgConfidence,
+                            coords: labelStats.get(maxLabel).coords
+                        });
+                    } else {
+                        finalResults.push({
+                            track_id: trackId,
+                            label: `${maxLabel} check!!`,
+                            confidence: maxAvgConfidence,
+                            coords: labelStats.get(maxLabel).coords
+                        });
+                    }
+                } else {
+                    finalResults.push({
+                        track_id: trackId,
+                        label: `${maxLabel} check!!`,
+                        confidence: maxAvgConfidence,
+                        coords: labelStats.get(maxLabel).coords
+                    });
+                }
+            });
+
+            return finalResults;
+        }
+
+        function startThreeSecondInference() {
+            // 초기화
+            aggregatedResults = [];
+            isCollectingResults = true;
+            totalInferenceFrames = 0;
+
+            // 추론이 실행 중이 아니면 시작
+            if (!isInferenceRunning) {
+                if (!ws || ws.readyState !== WebSocket.OPEN) {
+                    connectWebSocket();
+                }
+                isInferenceRunning = true;
+                requestAnimationFrame(startInference);
+            }
+
+            // 3초 후 종료
+            inferenceTimeout = setTimeout(() => {
+                isCollectingResults = false;
+                isInferenceRunning = false;
+                
+                const processedResults = processAggregatedResults(aggregatedResults, totalInferenceFrames);
+                drawResultTexts(processedResults);
+                updateResultsTable(processedResults);
+                
+                if (ws) {
+                    ws.close();
+                }
+            }, 3000);
+        }
+
+        // 3seconds 버튼에 이벤트 리스너 추가
+        document.getElementById('3seconds').addEventListener('click', function() {
+            if (inferenceTimeout) {
+                clearTimeout(inferenceTimeout);
+            }
+            startThreeSecondInference();
+        })
+
+
+
+
     </script>
 </body>
 </html>
