@@ -4,12 +4,12 @@ options:
 steps:
   # Docker 이미지를 빌드
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA', '.']
+    args: ['build', '-t', 'gcr.io/sunlit-context-430703-g8/yolo-app:v2', '.']
     timeout: '1800s'  # 빌드 시간 증가
   
   # Docker 이미지를 푸시
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA']
+    args: ['push', 'gcr.io/sunlit-context-430703-g8/yolo-app:v2']
   
   # Cloud Run에 배포
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -19,7 +19,7 @@ steps:
       - 'deploy'
       - 'yolo-app'
       - '--image'
-      - 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA'
+      - 'gcr.io/sunlit-context-430703-g8/yolo-app:v2'
       - '--region'
       - 'asia-northeast3'
       - '--platform'
@@ -32,5 +32,5 @@ steps:
       - '--timeout'
       - '300'  # 요청 타임아웃 증가
 images:
-  - 'gcr.io/sunlit-context-430703-g8/yolo-app:$COMMIT_SHA'
+  - 'gcr.io/sunlit-context-430703-g8/yolo-app:v2'
 timeout: '3600s'  # 전체 빌드 프로세스 타임아웃 증가
