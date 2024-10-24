@@ -1,6 +1,6 @@
 options:
   default_logs_bucket_behavior: REGIONAL_USER_OWNED_BUCKET
-  machineType: 'E2_HIGHCPU_32'  # 더 높은 성능의 빌더 머신 사용
+  machineType: 'N1_HIGHCPU_8'  # 더 높은 성능의 빌더 머신 사용
 steps:
   # Docker 이미지를 빌드
   - name: 'gcr.io/cloud-builders/docker'
