@@ -1,5 +1,6 @@
 options:
-  logging: sushi-model  # 로그를 Cloud Logging에만 기록
+  logging: CLOUD_LOGGING_ONLY  # 로그를 Cloud Logging에만 기록하도록 설정
+
 
 steps:
   # 1. 모든 모델 파일을 GCS에서 다운로드
