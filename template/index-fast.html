@@ -6,38 +6,65 @@
     <title>Sushi Plate Detector with WebSocket</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        /* 기존 CSS 스타일 유지 */
+        /* 기본 레이아웃 스타일 */
         body {
             display: flex;
-            align-items: flex-start;
-            height: 100vh;
+            flex-direction: row;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
             font-family: Arial, sans-serif;
+            box-sizing: border-box;
         }
+
         #left-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            flex: 1;
+            max-width: 650px;
             margin-right: 20px;
         }
+
+        #results-container {
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            height: fit-content;
+        }
+
+        /* Add Result 섹션 스타일 */
+        .dropdown {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
         #video-container {
             position: relative;
             width: 100%;
             height: auto;
             margin-top: 10px;
         }
-        #video, #videoCancas, #textCancas {
+
+        #video, #videoCanvas, #textCanvas {
             width: 100%;
             max-width: 640px;
             height: auto;
             display: block;
         }
+
         #videoCanvas {
             position: absolute;
             left: 0;
             top: 0;
             z-index: 1;
         }
+
         #textCanvas {
             position: absolute;
             left: 0;
@@ -45,91 +72,139 @@
             z-index: 2;
             pointer-events: none;
         }
-        #results-container {
-            max-width: 400px;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
+
+        /* 테이블 컨테이너 수정 */
+        .table-container {
+            width: 100%;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
         }
-        table {
+
+        /* 테이블 스타일 수정 */
+        #resultsTable {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
+            background-color: white;
+            table-layout: fixed;
         }
+
+        /* 열 너비 조정 */
+        #resultsTable th:nth-child(1),
+        #resultsTable td:nth-child(1) {
+            width: 40%;
+        }
+
+        #resultsTable th:nth-child(2),
+        #resultsTable td:nth-child(2) {
+            width: 20%;
+        }
+
+        #resultsTable th:nth-child(3),
+        #resultsTable td:nth-child(3) {
+            width: 20%;
+        }
+
+        #resultsTable th:nth-child(4),
+        #resultsTable td:nth-child(4),
+        #resultsTable th:nth-child(5),
+        #resultsTable td:nth-child(5) {
+            width: 20%;
+        }
+
         th, td {
             border: 1px solid #ccc;
-            padding: 8px;
+            padding: 5px;
             text-align: left;
+            word-wrap: break-word; /* 긴 텍스트 자동 줄바꿈 */
+            min-height: 20px; /* 최소 높이 설정 */
         }
-        th {
-            background-color: #f2f2f2;
+
+        /* 선택기와 버튼 크기 조정 */
+        .label-select {
+            width: 90%;
+            padding: 5px;
+            box-sizing: border-box;
         }
-        .dropdown {
-            position: relative;
-            display: inline-block;
-            margin: 20px 0;
+
+        .action-button {
+            padding: 4px 8px;
+            width: 90%;
+            margin: 2px;
+            white-space: normal; /* 버튼 텍스트 자동 줄바꿈 */
+            height: auto; /* 버튼 높이 자동 조절 */
+            min-height: 28px; /* 버튼 최소 높이 */
         }
-        .dropbtn {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
+        
+        .delete-button {
+            background-color: #f44336;
         }
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #f9f9f9;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
+        
+        .add-button {
+            background-color: #2196F3;
         }
-        .dropdown-content a {
-            color: black;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-        }
-        .dropdown-content a:hover {
-            background-color: #f1f1f1;
-        }
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
-        #modelSelect, #fpsInput { 
-            margin: 10px 0;
-        }
-        @media screen and (max-width: 768px) {
+
+        /* 반응형 레이아웃 */
+        @media screen and (max-width: 1024px) {
             body {
                 flex-direction: column;
                 align-items: center;
                 padding: 10px;
             }
-            #video-container, #results-container {
+
+            #left-container {
+                margin-right: 0;
+                margin-bottom: 20px;
                 width: 100%;
-                margin-right:0;
+                max-width: none;
             }
-            video, canvas {
-                width: 100%;
-                height: auto;
-            }
+
             #results-container {
+                width: 100%;
+                max-width: none;
                 margin-top: 20px;
             }
+
+            #video-container {
+                margin-bottom: 20px;
+            }
+
             table {
                 font-size: 14px;
             }
-            .dropbtn {
+
+            .label-select {
                 width: 100%;
+                min-width: 100px;
+            }
+
+            th, td {
+                padding: 6px;
+            }
+        }
+
+        /* 작은 화면에서의 테이블 스크롤 */
+        @media screen and (max-width: 600px) {
+            .table-container {
+                margin: 0 -10px;
+                padding: 0 10px;
+                width: calc(100% + 20px);
+            }
+
+            table {
+                min-width: 400px;
+            }
+
+            .action-button {
+                padding: 4px 8px;
+                font-size: 12px;
             }
         }
     </style>
 </head>
 <body>
     <div id="left-container">
-        <h1>Sushi Plate Detector WebSocket 수정3 3초 간 추론 추가</h1>
+        <h1>Sushi Plate Detector WebSocket 수정4 결과 테이블 수정</h1>
         <div style="display: flex; align-items: center;">
             <select id="modelSelect">
                 <option value="yolov8n">YOLOv8n</option>
@@ -138,11 +213,11 @@
                 <option value="yolov9s">YOLOv9s</option>
                 <option value="yolo11s">YOLO11s</option>
             </select>
-            
+
             <label for="fpsInput" style="margin-left: 10px;">FPS:</label>
             <input type="number" id="fpsInput" min="1" max="50" value="1" style="margin-left: 5px;">
         </div>
-        
+
         <div id="video-container">
             <video id="video" autoplay playsinline></video>
             <canvas id="videoCanvas"></canvas>
@@ -154,19 +229,23 @@
         <button id="stopInference">Stop Inference</button>
         <button id="3seconds">3초 추론 후 결과 종합</button>
         <h2>Detection Results</h2>
-        <table id="resultsTable">
-            <thead>
-                <tr>
-                    <th>Plate Color</th>
-                    <th>Price per Plate</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        
-        <div class="dropdown">            
+        <div class="table-container">
+            <table id="resultsTable">
+                <thead>
+                    <tr>
+                        <th>Plate Color</th>
+                        <th>Price per Plate</th>
+                        <th>Check State</th>
+                        <th>Delete</th>
+                        <th>Add</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="dropdown">
             <button id="dropbtn">Add Result</button>
             <div class="dropdown-content">
                 <a href="#" onclick="addItem('black', 10000)">black</a>
@@ -186,7 +265,7 @@
         <h3>합산 금액: <span id="totalPrice">0</span> 원</h3>
     </div>
 
-    <script>
+    <script> //자바 스크립트 동적 기능 구현 내용
         let ws = null;
         const video = document.getElementById('video');
         const videoCanvas = document.getElementById('videoCanvas');
@@ -206,11 +285,11 @@
         let totalInferenceFrames = 0;
         let isCollectingResults = false;
 
-        function connectWebSocket() {
-            // WebSocket 연결 (wss:// 프로토콜로 수정)
+        function connectWebSocket() { // WebSocket 연결
+
             const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
             ws = new WebSocket(`${protocol}://${window.location.host}/ws`);
-            
+
             ws.onopen = function() {
                 console.log('WebSocket connected');
             };
@@ -242,7 +321,7 @@
             };
         }
 
-        navigator.mediaDevices.getUserMedia({
+        navigator.mediaDevices.getUserMedia({ // 모바일에서 후면카메라 사용
             video: { facingMode: "environment" }
         })
         .then(function(stream) {
@@ -257,7 +336,7 @@
             // 비디오의 실제 크기를 가져옵니다
             const videoWidth = video.videoWidth;
             const videoHeight = video.videoHeight;
-            
+
             // 캔버스들의 해상도를 비디오와 동일하게 설정
             videoCanvas.width = videoWidth;
             videoCanvas.height = videoHeight;
@@ -265,6 +344,7 @@
             textCanvas.height = videoHeight;
         });
 
+        // 추론 시작 버튼 눌렀을 때 실행되는 함수
         function startInference() {
             if (!isInferenceRunning) return;
 
@@ -278,10 +358,10 @@
             }
 
             lastInferenceTime = currentTime;
-            
+
             videoContext.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
             const imageData = videoCanvas.toDataURL('image/jpeg');
-            
+
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({
                     image: imageData.split(',')[1],
@@ -292,6 +372,7 @@
             requestAnimationFrame(startInference);
         }
 
+        // 추론 시작 버튼 기능
         document.getElementById('startInference').addEventListener('click', function() {
             if (!ws || ws.readyState !== WebSocket.OPEN) {
                 connectWebSocket();
@@ -300,6 +381,7 @@
             requestAnimationFrame(startInference);
         });
 
+        // 추론 종료 버튼 기능
         document.getElementById('stopInference').addEventListener('click', function() {
             isInferenceRunning = false;
             if (ws) {
@@ -307,12 +389,7 @@
             }
         });
 
-        // 드롭다운 버튼 클릭 시 드롭다운 열기/닫기
-        document.getElementById("dropbtn").onclick = function() {
-            var dropdownContent = document.getElementById("dropdownContent");
-            dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
-        }
-
+        // 접시 색상과 가격 맵핑
         const platePrices = {
             'black': 10000,
             'blue': 9000,
@@ -326,19 +403,19 @@
             'yellow-rec': 1000
         };
 
-        function drawResultTexts(results) {
+        function drawResultTexts(results) { // 비디오 캔버스에 추론 결과 표시하는 함수
             textContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
             results.forEach(result => {
                 const coords = result.coords;
                 const label = `${result.track_id} ${result.label} (${Math.round(result.confidence * 100)}%)`;
-                
+
                 const x1 = coords[0];
                 const y1 = coords[1];
                 const x2 = coords[2];
                 const y2 = coords[3];
 
                 const color = getColorForLabel(result.label);
-                
+
                 const textX = (x1 + x2) / 2;
                 const textY = y2 - 15;
 
@@ -349,7 +426,7 @@
             });
         }
 
-        function getColorForLabel(label) {
+        function getColorForLabel(label) {  // 라벨 별로 텍스트 색상 맵핑하는 함수
             const colorMapping = {
                 'black': 'rgb(0, 0, 0)',
                 'blue': 'rgb(0, 0, 255)',
@@ -366,28 +443,57 @@
         }
 
         function updateResultsTable(results) {
+            // tbody 요소 확실하게 가져오기
+            const tbody = document.getElementById('resultsTable').querySelector('tbody');
+            if (!tbody) {
+                console.error('Table body not found');
+                return;
+            }
+
+            // 기존 행들 제거
+            tbody.innerHTML = '';
+            
+            // 결과를 y좌표 기준으로 정렬
             results.sort((a, b) => a.coords[3] - b.coords[3]);
-            resultsTable.innerHTML = '';
-
+            
             results.forEach(result => {
-                const label = result.label;
-                const price = platePrices[label] || 0;
-
-                const row = resultsTable.insertRow();
-                row.insertCell(0).textContent = label;
-                row.insertCell(1).textContent = price + ' 원';
+                const row = tbody.insertRow();
                 
-                const deleteCell = row.insertCell(2);
+                // Label select cell
+                const labelCell = row.insertCell(0);
+                labelCell.appendChild(createLabelSelect(result.label));
+                
+                // Price cell
+                const priceCell = row.insertCell(1);
+                priceCell.textContent = platePrices[result.label] + ' 원';
+                
+                // Check state cell
+                const checkStateCell = row.insertCell(2);
+                checkStateCell.textContent = result.check_state || '';
+                
+                // Delete button cell
+                const deleteCell = row.insertCell(3);
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = '삭제';
+                deleteButton.className = 'action-button delete-button';
                 deleteButton.onclick = () => removeItem(deleteButton);
                 deleteCell.appendChild(deleteButton);
+                
+                // Add button cell
+                const addCell = row.insertCell(4);
+                const addButton = document.createElement('button');
+                addButton.textContent = '추가';
+                addButton.className = 'action-button add-button';
+                addButton.onclick = function() {
+                    addNewRow(this.closest('tr'));
+                };
+                addCell.appendChild(addButton);
             });
-
+            
             updateTotalPrice();
         }
 
-        function updateTotalPrice() {
+        function updateTotalPrice() { // 결과 테이블 내용 바탕으로 합산 금액 계산하는 함수
             let totalPrice = 0;
             let totalPlates = 0;
             const rows = resultsTable.rows;
@@ -403,35 +509,29 @@
             totalPlatesSpan.textContent = totalPlates;
         }
 
+
+
         function addItem(name, value) {
-            const table = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
-            const newRow = table.insertRow();
+            event.preventDefault(); // 링크의 기본 동작을 막습니다
+            const tbody = document.getElementById('resultsTable').querySelector('tbody');
+            if (tbody) {
+                addNewRow(null, name);
+            }
+        }   
 
-            const cell1 = newRow.insertCell(0);
-            const cell2 = newRow.insertCell(1);
-            const cell3 = newRow.insertCell(2);
 
-            cell1.innerHTML = name;
-            cell2.innerHTML = value + ' 원';
-            cell3.innerHTML = '<button onclick="removeItem(this)">삭제</button>';
 
-            updateTotalPrice();
-            
-            // 드롭다운 닫기
-            document.getElementById("dropdownContent").style.display = 'none';
-        }
-
-        function removeItem(button) {
+        function removeItem(button) { // 결과 테이블에서 행 삭제하는 함수수
             const row = button.parentNode.parentNode;
             row.parentNode.removeChild(row);
             updateTotalPrice();
         }
 
 
-        function processAggregatedResults(results, totalFrames) {
+        function processAggregatedResults(results, totalFrames) { // 3초 추론시 결과 종합하는 함수
             // Track ID별로 결과를 그룹화
             const trackGroups = new Map();
-            
+
             results.forEach(result => {
                 if (!trackGroups.has(result.track_id)) {
                     trackGroups.set(result.track_id, []);
@@ -469,6 +569,7 @@
                     finalResults.push({
                         track_id: trackId,
                         label: label,
+                        check_state:"",
                         confidence: stats.totalConfidence / stats.count,
                         coords: stats.coords
                     });
@@ -504,14 +605,16 @@
                     if (maxLabel === maxConfidenceLabel) {
                         finalResults.push({
                             track_id: trackId,
-                            label: `${maxLabel} check!`,
+                            label: maxLabel,
+                            check_state: 'check!',
                             confidence: maxAvgConfidence,
                             coords: labelStats.get(maxLabel).coords
                         });
                     } else {
                         finalResults.push({
                             track_id: trackId,
-                            label: `${maxLabel} check!!`,
+                            label: maxLabel,
+                            check_state: 'check!!',
                             confidence: maxAvgConfidence,
                             coords: labelStats.get(maxLabel).coords
                         });
@@ -519,7 +622,8 @@
                 } else {
                     finalResults.push({
                         track_id: trackId,
-                        label: `${maxLabel} check!!`,
+                        label: maxLabel,
+                        check_state: 'check!!!',
                         confidence: maxAvgConfidence,
                         coords: labelStats.get(maxLabel).coords
                     });
@@ -529,7 +633,7 @@
             return finalResults;
         }
 
-        function startThreeSecondInference() {
+        function startThreeSecondInference() { // 3초 추론 버튼 누르면 실행되는 함수
             // 초기화
             aggregatedResults = [];
             isCollectingResults = true;
@@ -548,11 +652,11 @@
             inferenceTimeout = setTimeout(() => {
                 isCollectingResults = false;
                 isInferenceRunning = false;
-                
+
                 const processedResults = processAggregatedResults(aggregatedResults, totalInferenceFrames);
                 drawResultTexts(processedResults);
                 updateResultsTable(processedResults);
-                
+
                 if (ws) {
                     ws.close();
                 }
@@ -566,6 +670,75 @@
             }
             startThreeSecondInference();
         })
+
+        function createLabelSelect(selectedLabel) {
+            const select = document.createElement('select');
+            select.className = 'label-select';
+
+            Object.keys(platePrices).forEach(label => {
+                const option = document.createElement('option');
+                option.value = label;
+                option.textContent = label;
+                option.selected = label === selectedLabel;
+                select.appendChild(option);
+            });
+
+            select.addEventListener('change', function() {
+                const row = this.closest('tr');
+                const priceCell = row.cells[1];
+                priceCell.textContent = platePrices[this.value] + ' 원';
+                updateTotalPrice();
+            });
+
+            return select;
+        }
+
+        function addNewRow(insertAfterRow, label = Object.keys(platePrices)[0]) {
+            const tbody = document.getElementById('resultsTable').querySelector('tbody');
+            if (!tbody) {
+                console.error('Table body not found');
+                return;
+            }
+
+            const newRow = document.createElement('tr');
+            
+            // Label select cell
+            const labelCell = newRow.insertCell(0);
+            labelCell.appendChild(createLabelSelect(label));
+            
+            // Price cell
+            const priceCell = newRow.insertCell(1);
+            priceCell.textContent = platePrices[label] + ' 원';
+            
+            // Check state cell
+            newRow.insertCell(2);
+            
+            // Delete button cell
+            const deleteCell = newRow.insertCell(3);
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = '삭제';
+            deleteButton.className = 'action-button delete-button';
+            deleteButton.onclick = () => removeItem(deleteButton);
+            deleteCell.appendChild(deleteButton);
+            
+            // Add button cell
+            const addCell = newRow.insertCell(4);
+            const addButton = document.createElement('button');
+            addButton.textContent = '추가';
+            addButton.className = 'action-button add-button';
+            addButton.onclick = function() {
+                addNewRow(this.closest('tr'));
+            };
+            addCell.appendChild(addButton);
+            
+            if (insertAfterRow) {
+                insertAfterRow.parentNode.insertBefore(newRow, insertAfterRow.nextSibling);
+            } else {
+                tbody.appendChild(newRow);
+            }
+            
+            updateTotalPrice();
+        }
 
 
 

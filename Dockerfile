@@ -1,17 +1,26 @@
-# 잘 동작하던 v2 이미지를 기반으로 사용
-FROM gcr.io/sunlit-context-430703-g8/yolo-app:v2
+# Use Python 3.9 slim image
+FROM python:3.11-slim
 
-# 작업 디렉토리 설정
+# Set working directory
 WORKDIR /app
 
-# 새로운 소스 코드만 복사
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first to leverage Docker cache
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install -r requirements.txt
+
+# Copy application code and model files
 COPY . .
 
-# PORT 환경변수 설정
-ENV PORT=8080
-
-# 포트 노출
+# Make port 8080 available
 EXPOSE 8080
 
-# 실행
+# Run the application
 CMD ["python", "app-fast.py"]
