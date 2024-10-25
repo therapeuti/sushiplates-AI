@@ -1,4 +1,4 @@
-# Use Python 3.9 slim image
+# Use Python 3.11 slim image
 FROM python:3.11-slim
 
 # Set working directory
@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt  # Add --no-cache-dir to avoid caching
 
 # Copy application code and model files
 COPY . .
