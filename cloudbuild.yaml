@@ -1,36 +1,35 @@
-options:
-  default_logs_bucket_behavior: REGIONAL_USER_OWNED_BUCKET
-  machineType: 'E2_HIGHCPU_8'  # 더 높은 성능의 빌더 머신 사용
 steps:
-  # Docker 이미지를 빌드
+  # 1. 모든 모델 파일을 GCS에서 다운로드
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['cp', 'gs://sushi-model/sushi9or11s.pt', './sushi9or11s.pt']
+
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['cp', 'gs://sushi-model/yolo11s-1010.pt', './modyolo11sel2.pt']
+
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['cp', 'gs://sushi-model/yolov8m_v3.pt', './yolov8m_v3.pt']
+
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['cp', 'gs://sushi-model/yolov8n.pt', './yolov8n.pt']
+
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['cp', 'gs://sushi-model/yolov8s.pt', './yolov8s.pt']
+
+  # 2. Docker 이미지 빌드
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/sunlit-context-430703-g8/yolo-app:v2', '.']
-    timeout: '1800s'  # 빌드 시간 증가
-  
-  # Docker 이미지를 푸시
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/sunlit-context-430703-g8/yolo-app:v2']
-  
-  # Cloud Run에 배포
+    args: ['build', '-t', 'gcr.io/sunlit-context-430703-g8/yolo-app', '.']
+
+  # 3. Cloud Run 배포
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'gcloud'
+    entrypoint: gcloud
     args:
-      - 'run'
-      - 'deploy'
-      - 'yolo-app'
-      - '--image'
-      - 'gcr.io/sunlit-context-430703-g8/yolo-app:v2'
-      - '--region'
-      - 'asia-northeast3'
-      - '--platform'
-      - 'managed'
-      - '--allow-unauthenticated'
-      - '--memory'
-      - '2Gi'  # 메모리 할당 증가
-      - '--cpu'
-      - '2'    # CPU 할당 증가
-      - '--timeout'
-      - '300'  # 요청 타임아웃 증가
+      [
+        'run', 'deploy', 'yolo-app',
+        '--image', 'gcr.io/sunlit-context-430703-g8/yolo-app',
+        '--platform', 'managed',
+        '--region', 'asia-northeast3',
+        '--allow-unauthenticated'
+      ]
+
 images:
-  - 'gcr.io/sunlit-context-430703-g8/yolo-app:v2'
-timeout: '3600s'  # 전체 빌드 프로세스 타임아웃 증가
+  - 'gcr.iosunlit-context-430703-g8/yolo-app'
