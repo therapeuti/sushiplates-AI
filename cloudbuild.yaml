@@ -7,7 +7,7 @@ steps:
     args: ['cp', 'gs://sushi-yolo/sushi9or11s.pt', './sushi9or11s.pt']
 
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['cp', 'gs://sushi-yolo/yolo11s-1010.pt', './modyolo11sel2.pt']
+    args: ['cp', 'gs://sushi-yolo/yolo11s-1010.pt', './yolo11-1010.pt']
 
   - name: 'gcr.io/cloud-builders/gsutil'
     args: ['cp', 'gs://sushi-yolo/yolov8m_v3.pt', './yolov8m_v3.pt']
@@ -35,4 +35,4 @@ steps:
       ]
 
 images:
-  - 'gcr.io/sunlit-context-430703-g8/yolo-app'  # 여기에서 'gcr.io' 형식으로 수정
+  -  'gcr.io/sushi-project-440000/yolo-app'
