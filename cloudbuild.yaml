@@ -4,23 +4,23 @@ options:
 steps:
   # 1. 모든 모델 파일을 GCS에서 다운로드
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['cp', 'gs://sushi-model/sushi9or11s.pt', './sushi9or11s.pt']
+    args: ['cp', 'gs://sushi-yolo/sushi9or11s.pt', './sushi9or11s.pt']
 
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['cp', 'gs://sushi-model/yolo11s-1010.pt', './modyolo11sel2.pt']
+    args: ['cp', 'gs://sushi-yolo/yolo11s-1010.pt', './modyolo11sel2.pt']
 
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['cp', 'gs://sushi-model/yolov8m_v3.pt', './yolov8m_v3.pt']
+    args: ['cp', 'gs://sushi-yolo/yolov8m_v3.pt', './yolov8m_v3.pt']
 
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['cp', 'gs://sushi-model/yolov8n.pt', './yolov8n.pt']
+    args: ['cp', 'gs://sushi-yolo/yolov8n.pt', './yolov8n.pt']
 
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['cp', 'gs://sushi-model/yolov8s.pt', './yolov8s.pt']
+    args: ['cp', 'gs://sushi-yolo/yolov8s.pt', './yolov8s.pt']
 
   # 2. Docker 이미지 빌드
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/sunlit-context-430703-g8/yolo-app', '.']
+    args: ['build', '-t', 'gcr.io/sushi-project-440000/yolo-app', '.']
 
   # 3. Cloud Run 배포
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -28,7 +28,7 @@ steps:
     args:
       [
         'run', 'deploy', 'yolo-app',
-        '--image', 'gcr.io/sunlit-context-430703-g8/yolo-app',
+        '--image', 'gcr.io/sushi-project-440000/yolo-app',
         '--platform', 'managed',
         '--region', 'asia-northeast3',
         '--allow-unauthenticated'
