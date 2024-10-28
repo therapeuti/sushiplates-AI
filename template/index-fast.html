@@ -25,15 +25,29 @@
         #video-container {
             position: relative;
             width: 100%;
-            height: auto;
+            padding-bottom: 100%; /* 정사각형 비율 */
+            max-width: 640px;
             margin-top: 10px;
+            overflow: hidden;
         }
 
-        #video, #videoCanvas, #textCanvas {
-            width: 100%;
-            max-width: 640px;
+        #video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
             height: auto;
-            display: block;
+            object-fit: cover;
+        }
+        #videoCanvas, #textCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
 
         #videoCanvas {
@@ -333,30 +347,64 @@
             };
         }
 
-        navigator.mediaDevices.getUserMedia({ // 모바일에서 후면카메라 사용
-            video: { facingMode: "environment" }
-        })
-        .then(function(stream) {
-            video.srcObject = stream;
-        })
-        .catch(function(error) {
-            console.error("Error accessing the camera: ", error);
-        });
+        // 비디오와 캔버스 설정을 위한 함수
+        function setupVideoAndCanvas() {
+            const SQUARE_SIZE = 640; // 원하는 정사각형 크기
+            
+            // 캔버스 크기 설정
+            videoCanvas.width = SQUARE_SIZE;
+            videoCanvas.height = SQUARE_SIZE;
+            textCanvas.width = SQUARE_SIZE;
+            textCanvas.height = SQUARE_SIZE;
 
-        // 비디오가 로드될 때 캔버스 크기를 설정
-        video.addEventListener('loadedmetadata', function() {
-            // 비디오의 실제 크기를 가져옵니다
-            const videoWidth = video.videoWidth;
-            const videoHeight = video.videoHeight;
+            // 비디오 메타데이터 로드 시 실행되는 함수
+            video.addEventListener('loadedmetadata', function() {
+                const videoWidth = video.videoWidth;
+                const videoHeight = video.videoHeight;
+                
+                // 비디오를 정사각형으로 크롭하기 위한 계산
+                const size = Math.min(videoWidth, videoHeight);
+                const xOffset = (videoWidth - size) / 2;
+                const yOffset = (videoHeight - size) / 2;
+                
+                // 프레임 그리기 함수 수정
+                window.drawVideoFrame = function() {
+                    if (!video.paused && !video.ended) {
+                        videoContext.drawImage(video, 
+                            xOffset, yOffset, size, size, // 소스 영역 (비디오에서 정사각형 부분)
+                            0, 0, SQUARE_SIZE, SQUARE_SIZE // 대상 영역 (캔버스 전체)
+                        );
+                        requestAnimationFrame(drawVideoFrame);
+                    }
+                };
+                
+                // 프레임 그리기 시작
+                drawVideoFrame();
+            });
+        }
 
-            // 캔버스들의 해상도를 비디오와 동일하게 설정
-            videoCanvas.width = videoWidth;
-            videoCanvas.height = videoHeight;
-            textCanvas.width = videoWidth;
-            textCanvas.height = videoHeight;
-        });
+        // 카메라 설정 및 시작
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: "environment",
+                        width: { ideal: 1280 },
+                        height: { ideal: 1280 }
+                    }
+                });
+                video.srcObject = stream;
+                video.play();
+                setupVideoAndCanvas();
+            } catch (error) {
+                console.error("Error accessing the camera: ", error);
+            }
+        }
 
-        // 추론 시작 버튼 눌렀을 때 실행되는 함수
+        // 페이지 로드 시 카메라 시작
+        startCamera();
+
+        // startInference 함수 수정
         function startInference() {
             if (!isInferenceRunning) return;
 
@@ -371,7 +419,7 @@
 
             lastInferenceTime = currentTime;
 
-            videoContext.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
+            // 정사각형으로 크롭된 이미지 데이터 전송
             const imageData = videoCanvas.toDataURL('image/jpeg');
 
             if (ws && ws.readyState === WebSocket.OPEN) {
