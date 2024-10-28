@@ -84,7 +84,7 @@ def process_image(image_data: str, model_name: str) -> dict:
         # 이미지 디코딩
         image = np.frombuffer(base64.b64decode(image_data), dtype=np.uint8)
         frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
-        # image_size = len(image)
+        image_size = len(image)
 
         if frame is None:
             raise ValueError("Invalid image data")
@@ -93,10 +93,14 @@ def process_image(image_data: str, model_name: str) -> dict:
         if model is None:
             raise ValueError(f"Model {model_name} not available")
 
-        # height, width, _ = frame.shape  # 이미지의 높이와 너비 가져오기
-        # print(f"Image size (bytes): {image_size}, Width: {width}, Height: {height}")
+        height, width, _ = frame.shape  # 이미지의 높이와 너비 가져오기
+        print(f"Image size (bytes): {image_size}, Width: {width}, Height: {height}")
 
-        results = model.track(frame, save=False, persist=True, conf=0.6, verbose=False) # 객체 추적하려면 predict이 아니라 track를 써야함.
+        # 모델에 맞는 입력 크기로 이미지 리사이즈
+        input_size = (640, 640)  # 예: YOLOv5는 일반적으로 640x640 입력 크기를 사용
+        resized_frame = cv2.resize(frame, input_size)
+
+        results = model.track(resized_frame, save=False, persist=True, conf=0.6, verbose=False) # 객체 추적하려면 predict이 아니라 track를 써야함.
 
         inference_results = []
 
