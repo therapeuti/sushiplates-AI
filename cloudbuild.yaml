@@ -7,7 +7,7 @@ steps:
     args: ['cp', 'gs://sushi-yolo/sushi9or11s.pt', './sushi9or11s.pt']
 
   - name: 'gcr.io/cloud-builders/gsutil'
-    args: ['cp', 'gs://sushi-yolo/yolo11s-1010.pt', './yolo11-1010.pt']
+    args: ['cp', 'gs://sushi-yolo/yolo11s-1010.pt', './yolo11s-1010.pt']
 
   - name: 'gcr.io/cloud-builders/gsutil'
     args: ['cp', 'gs://sushi-yolo/yolov8m_v3.pt', './yolov8m_v3.pt']
