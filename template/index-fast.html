@@ -22,28 +22,6 @@
             max-width: 650px;
             margin-right: 20px;
         }
-
-        #results-container {
-            flex: 1;
-            min-width: 300px;
-            max-width: 400px;
-            padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            height: fit-content;
-        }
-
-        /* Add Result 섹션 스타일 */
-        .dropdown {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
         #video-container {
             position: relative;
             width: 100%;
@@ -72,6 +50,21 @@
             z-index: 2;
             pointer-events: none;
         }
+
+        #results-container {
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            height: fit-content;
+        }
+
+        
+
+        
 
         /* 테이블 컨테이너 수정 */
         .table-container {
@@ -143,6 +136,15 @@
         .add-button {
             background-color: #2196F3;
         }
+        /* Add Result 섹션 스타일 */
+        .dropdown {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
         /* 반응형 레이아웃 */
         @media screen and (max-width: 1024px) {
@@ -158,18 +160,17 @@
                 width: 100%;
                 max-width: none;
             }
+            #video-container {
+                margin-bottom: 20px;
+            }
 
             #results-container {
                 width: 100%;
                 max-width: none;
                 margin-top: 20px;
             }
-
-            #video-container {
-                margin-bottom: 20px;
-            }
-
             table {
+                width: 100%;
                 font-size: 14px;
             }
 
@@ -192,7 +193,8 @@
             }
 
             table {
-                min-width: 400px;
+                width: 100%
+                min-width: 300px;
             }
 
             .action-button {
