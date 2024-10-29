@@ -25,7 +25,7 @@
             position: relative;
             width: 100%;
             padding-bottom: 100%; /* 정사각형 비율 */
-            max-width: 640px;
+            max-width: 650px;
             margin-top: 10px;
             overflow: auto;
         }
@@ -127,10 +127,10 @@
             white-space: normal; /* 버튼 텍스트 자동 줄바꿈 */
             height: auto; /* 버튼 높이 자동 조절 */
             min-height: 28px; /* 버튼 최소 높이 */
-        }        
+        }
         .delete-button {
             background-color: #f44336;
-        }        
+        }
         .add-button {
             background-color: #2196F3;
         }
@@ -208,7 +208,7 @@
 </head>
 <body>
     <div id="left-container">
-        <h1>Sushi Plate Detector WebSocket 수정9 데이터 수신 및 전송여부 콘솔에서 확인</h1>
+        <h1>Sushi Plate Detector WebSocket 수정9 뭔데... 개짜증</h1>
         <div style="display: flex; align-items: center;">
             <select id="modelSelect">
                 <option value="yolov8n">YOLOv8n</option>
@@ -289,34 +289,50 @@
         let totalInferenceFrames = 0;
         let isCollectingResults = false;
 
-        function connectWebSocket() { // WebSocket 연결
-
+        // WebSocket 연결 함수 수정
+        function connectWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
             ws = new WebSocket(`${protocol}://${window.location.host}/ws`);
 
             ws.onopen = function() {
                 console.log('WebSocket connected');
+                // 연결 즉시 상태 확인
+                console.log('WebSocket state:', ws.readyState);
             };
 
             ws.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                if (data.error) {
-                    console.error('Server error:', data.error);
-                    return;
-                }
-                if (isCollectingResults) {
-                    totalInferenceFrames++;
-                    aggregatedResults.push(...data.results);
-                } else {
-                    drawResultTexts(data.results);
-                    updateResultsTable(data.results);
+                console.log('Received message from server');
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('Parsed data:', data);
+
+                    if (data.error) {
+                        console.error('Server error:', data.error);
+                        return;
+                    }
+
+                    if (data.results && data.results.length > 0) {
+                        console.log('Detection results:', data.results);
+                        if (isCollectingResults) {
+                            totalInferenceFrames++;
+                            aggregatedResults.push(...data.results);
+                        } else {
+                            drawResultTexts(data.results);
+                            updateResultsTable(data.results);
+                        }
+                    } else {
+                        console.log('No detection results in response');
+                    }
+                } catch (error) {
+                    console.error('Error parsing message:', error);
                 }
             };
 
-            ws.onclose = function() {
-                console.log('WebSocket disconnected');
+            ws.onclose = function(event) {
+                console.log('WebSocket disconnected with code:', event.code);
                 if (isInferenceRunning) {
-                    setTimeout(connectWebSocket, 1000); // 재연결 시도
+                    console.log('Attempting to reconnect...');
+                    setTimeout(connectWebSocket, 1000);
                 }
             };
 
@@ -325,79 +341,45 @@
             };
         }
 
-        // 화면 크기에 맞는 정사각형 크기 계산
-        function calculateSquareSize() {
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
-            // 화면의 짧은 쪽 길이의 90%를 정사각형 크기로 사용
-            return Math.min(screenWidth, screenHeight) * 0.9;
-        }
-
-        // 비디오와 캔버스 설정을 위한 함수
         function setupVideoAndCanvas() {
-            const SQUARE_SIZE = calculateSquareSize();
-            
-            // 캔버스 크기 설정
-            videoCanvas.width = SQUARE_SIZE;
-            videoCanvas.height = SQUARE_SIZE;
-            textCanvas.width = SQUARE_SIZE;
-            textCanvas.height = SQUARE_SIZE;
-
-            // 비디오 스타일 설정
-            video.style.width = SQUARE_SIZE + 'px';
-            video.style.height = SQUARE_SIZE + 'px';
-            video.style.objectFit = 'cover';
-
-            // 비디오 메타데이터 로드 시 실행되는 함수
             video.addEventListener('loadedmetadata', function() {
+                // 비디오의 실제 너비와 높이를 캔버스에 적용
                 const videoWidth = video.videoWidth;
                 const videoHeight = video.videoHeight;
-                
-                // 비디오를 정사각형으로 크롭하기 위한 계산
-                const size = Math.min(videoWidth, videoHeight);
-                const xOffset = (videoWidth - size) / 2;
-                const yOffset = (videoHeight - size) / 2;
-                
-                // 프레임 그리기 함수
+
+                videoCanvas.width = videoWidth;
+                videoCanvas.height = videoHeight;
+                textCanvas.width = videoWidth;
+                textCanvas.height = videoHeight;
+
+                // 프레임을 캔버스에 그리는 함수
                 window.drawVideoFrame = function() {
                     if (!video.paused && !video.ended) {
-                        videoContext.save();
-                        videoContext.clearRect(0, 0, SQUARE_SIZE, SQUARE_SIZE);
-                        
-                        videoContext.drawImage(video, 
-                            xOffset, yOffset, size, size, // 소스 영역
-                            0, 0, SQUARE_SIZE, SQUARE_SIZE // 대상 영역
-                        );
-                        
-                        videoContext.restore();
+                        // 비디오 화면을 그대로 캔버스에 출력
+                        videoContext.drawImage(video, 0, 0, videoWidth, videoHeight);
                         requestAnimationFrame(drawVideoFrame);
                     }
                 };
-                
+
                 // 프레임 그리기 시작
                 drawVideoFrame();
             });
         }
 
+
         // 카메라 설정 및 시작
         async function startCamera() {
             try {
-                const constraints = {
+                const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: "environment",
-                        aspectRatio: { ideal: 1 }
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
                     }
-                };
-                
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = stream;
-                await video.play();
-                setupVideoAndCanvas();
-                
-                // 화면 크기 변경 시 재설정
-                window.addEventListener('resize', function() {
-                    setupVideoAndCanvas();
                 });
+                video.srcObject = stream;
+                video.play();
+                setupVideoAndCanvas();
             } catch (error) {
                 console.error("Error accessing the camera: ", error);
             }
@@ -406,7 +388,7 @@
         // 페이지 로드 시 카메라 시작
         startCamera();
 
-        // startInference 함수 수정
+        // 이미지 전송 함수 수정
         function startInference() {
             if (!isInferenceRunning) return;
 
@@ -421,22 +403,46 @@
 
             lastInferenceTime = currentTime;
 
-            // 정사각형으로 크롭된 이미지 데이터 전송
-            const imageData = videoCanvas.toDataURL('image/jpeg');
+            try {
+                // 캔버스의 현재 상태 확인
+                console.log('Canvas dimensions:', {
+                    width: videoCanvas.width,
+                    height: videoCanvas.height
+                });
 
-            if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    image: imageData.split(',')[1],
-                    model: modelSelect.value
-                }));
+                // 이미지 품질 설정 추가
+                const imageData = videoCanvas.toDataURL('image/jpeg', 0.8);
+                const imageSize = Math.round((imageData.length - 22) * 3 / 4 / 1024); // Base64 크기를 KB로 계산
+                console.log('Image size:', imageSize, 'KB');
+
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    const message = JSON.stringify({
+                        image: imageData.split(',')[1],
+                        model: modelSelect.value,
+                        timestamp: Date.now()
+                    });
+
+                    ws.send(message);
+                    console.log('Sent image to server, model:', modelSelect.value);
+                } else {
+                    console.warn('WebSocket not ready:', ws ? ws.readyState : 'null');
+                    if (!ws || ws.readyState === WebSocket.CLOSED) {
+                        console.log('Attempting to reconnect WebSocket...');
+                        connectWebSocket();
+                    }
+                }
+            } catch (error) {
+                console.error('Error sending image:', error);
             }
 
             requestAnimationFrame(startInference);
         }
 
-        // 추론 시작 버튼 기능
+        // 추론 시작 버튼 이벤트 리스너 수정
         document.getElementById('startInference').addEventListener('click', function() {
+            console.log('Starting inference...');
             if (!ws || ws.readyState !== WebSocket.OPEN) {
+                console.log('WebSocket not connected, connecting...');
                 connectWebSocket();
             }
             isInferenceRunning = true;
@@ -514,25 +520,25 @@
 
             // 기존 행들 제거
             tbody.innerHTML = '';
-            
+
             // 결과를 y좌표 기준으로 정렬
             results.sort((a, b) => a.coords[3] - b.coords[3]);
-            
+
             results.forEach(result => {
                 const row = tbody.insertRow();
-                
+
                 // Label select cell
                 const labelCell = row.insertCell(0);
                 labelCell.appendChild(createLabelSelect(result.label));
-                
+
                 // Price cell
                 const priceCell = row.insertCell(1);
                 priceCell.textContent = platePrices[result.label] + ' 원';
-                
+
                 // Check state cell
                 const checkStateCell = row.insertCell(2);
                 checkStateCell.textContent = result.check_state || '';
-                
+
                 // Delete button cell
                 const deleteCell = row.insertCell(3);
                 const deleteButton = document.createElement('button');
@@ -540,7 +546,7 @@
                 deleteButton.className = 'action-button delete-button';
                 deleteButton.onclick = () => removeItem(deleteButton);
                 deleteCell.appendChild(deleteButton);
-                
+
                 // Add button cell
                 const addCell = row.insertCell(4);
                 const addButton = document.createElement('button');
@@ -551,7 +557,7 @@
                 };
                 addCell.appendChild(addButton);
             });
-            
+
             updateTotalPrice();
         }
 
@@ -579,7 +585,7 @@
             if (tbody) {
                 addNewRow(null, name);
             }
-        }   
+        }
 
 
 
@@ -763,18 +769,18 @@
             }
 
             const newRow = document.createElement('tr');
-            
+
             // Label select cell
             const labelCell = newRow.insertCell(0);
             labelCell.appendChild(createLabelSelect(label));
-            
+
             // Price cell
             const priceCell = newRow.insertCell(1);
             priceCell.textContent = platePrices[label] + ' 원';
-            
+
             // Check state cell
             newRow.insertCell(2);
-            
+
             // Delete button cell
             const deleteCell = newRow.insertCell(3);
             const deleteButton = document.createElement('button');
@@ -782,7 +788,7 @@
             deleteButton.className = 'action-button delete-button';
             deleteButton.onclick = () => removeItem(deleteButton);
             deleteCell.appendChild(deleteButton);
-            
+
             // Add button cell
             const addCell = newRow.insertCell(4);
             const addButton = document.createElement('button');
