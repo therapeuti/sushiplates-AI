@@ -16,11 +16,10 @@
             font-family: Arial, sans-serif;
             box-sizing: border-box;
         }
-
         #left-container {
             flex: 1;
             max-width: 650px;
-            margin-right: 20px;
+            margin-right: 10px;
         }
         #video-container {
             position: relative;
@@ -28,9 +27,8 @@
             padding-bottom: 100%; /* 정사각형 비율 */
             max-width: 640px;
             margin-top: 10px;
-            overflow: hidden;
+            overflow: auto;
         }
-
         #video {
             position: absolute;
             top: 50%;
@@ -49,14 +47,12 @@
             width: 100%;
             height: 100%;
         }
-
         #videoCanvas {
             position: absolute;
             left: 0;
             top: 0;
             z-index: 1;
         }
-
         #textCanvas {
             position: absolute;
             left: 0;
@@ -64,26 +60,24 @@
             z-index: 2;
             pointer-events: none;
         }
-
         #results-container {
             flex: 1;
-            min-width: 300px;
-            max-width: 400px;
+            min-width: 400px;
+            max-width: 480px;
             padding: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
             background-color: #f9f9f9;
             height: fit-content;
-            overflow: hidden;
+            overflow: auto;
         }
         /* 테이블 컨테이너 수정 */
         .table-container {
             width: 100%;
-            max-height: calc(100vh - 250px);
+            max-height: 100vh;
             overflow-y: auto;
             overflow-x: hidden;
         }
-
         /* 테이블 스타일 수정 */
         #resultsTable {
             width: 100%;
@@ -93,30 +87,25 @@
             table-layout: fixed;
             max-width:100%;
         }
-
         /* 열 너비 조정 */
         #resultsTable th:nth-child(1),
         #resultsTable td:nth-child(1) {
             width: 40%;
         }
-
         #resultsTable th:nth-child(2),
         #resultsTable td:nth-child(2) {
             width: 20%;
         }
-
         #resultsTable th:nth-child(3),
         #resultsTable td:nth-child(3) {
             width: 20%;
         }
-
         #resultsTable th:nth-child(4),
         #resultsTable td:nth-child(4),
         #resultsTable th:nth-child(5),
         #resultsTable td:nth-child(5) {
             width: 20%;
         }
-
         th, td {
             border: 1px solid #ccc;
             padding: 5px;
@@ -131,7 +120,6 @@
             padding: 5px;
             box-sizing: border-box;
         }
-
         .action-button {
             padding: 4px 8px;
             width: 80%;
@@ -139,12 +127,10 @@
             white-space: normal; /* 버튼 텍스트 자동 줄바꿈 */
             height: auto; /* 버튼 높이 자동 조절 */
             min-height: 28px; /* 버튼 최소 높이 */
-        }
-        
+        }        
         .delete-button {
             background-color: #f44336;
-        }
-        
+        }        
         .add-button {
             background-color: #2196F3;
         }
@@ -165,62 +151,54 @@
                 align-items: center;
                 padding: 10px;
             }
-
             #left-container {
                 margin-right: 0;
                 margin-bottom: 20px;
                 width: 100%;
-                max-width: none;
+                max-width: 650;
             }
             #video-container {
                 margin-bottom: 20px;
             }
-
             #results-container {
                 width: 100%;
-                max-width: none;
+                max-width: 640px;
                 margin-top: 20px;
             }
             table {
                 width: 100%;
                 font-size: 14px;
             }
-
             .label-select {
                 width: 100%;
                 min-width: 100px;
             }
-
             th, td {
                 padding: 6px;
             }
         }
 
         /* 작은 화면에서의 테이블 스크롤 */
-        @media screen and (max-width: 480px) {
+        @media screen and (max-width: 640px) {
             .table-container {
                 margin: 0; /* 수정: 마진 제거 */
                 padding: 0; /* 수정: 패딩 제거 */
                 width: 100%; /* 수정: 너비를 100%로 제한 */
             }
-
             #results-container {
                 width: 100%;
                 max-width: none;
                 margin-top: 20px;
                 padding: 10px; /* 수정: 패딩 줄임 */
             }
-
             #resultsTable {
                 width: 100%;
                 font-size: 12px; /* 수정: 폰트 크기 줄임 */
             }
-
             .action-button {
                 padding: 4px 8px;
                 font-size: 12px;
             }
-
             th, td {
                 padding: 4px; /* 수정: 셀 패딩 줄임 */
                 font-size: 12px; /* 수정: 셀 폰트 크기 줄임 */
@@ -230,7 +208,7 @@
 </head>
 <body>
     <div id="left-container">
-        <h1>Sushi Plate Detector WebSocket 수정7 화면 1:1</h1>
+        <h1>Sushi Plate Detector WebSocket 수정8 모바일에서 화면이 멈추는 건지 마지막 이미지만 계속 캔버스에 떠있는거 수정 확인</h1>
         <div style="display: flex; align-items: center;">
             <select id="modelSelect">
                 <option value="yolov8n">YOLOv8n</option>
@@ -347,15 +325,28 @@
             };
         }
 
+        // 화면 크기에 맞는 정사각형 크기 계산
+        function calculateSquareSize() {
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            // 화면의 짧은 쪽 길이의 90%를 정사각형 크기로 사용
+            return Math.min(screenWidth, screenHeight) * 0.9;
+        }
+
         // 비디오와 캔버스 설정을 위한 함수
         function setupVideoAndCanvas() {
-            const SQUARE_SIZE = 640; // 원하는 정사각형 크기
+            const SQUARE_SIZE = calculateSquareSize();
             
             // 캔버스 크기 설정
             videoCanvas.width = SQUARE_SIZE;
             videoCanvas.height = SQUARE_SIZE;
             textCanvas.width = SQUARE_SIZE;
             textCanvas.height = SQUARE_SIZE;
+
+            // 비디오 스타일 설정
+            video.style.width = SQUARE_SIZE + 'px';
+            video.style.height = SQUARE_SIZE + 'px';
+            video.style.objectFit = 'cover';
 
             // 비디오 메타데이터 로드 시 실행되는 함수
             video.addEventListener('loadedmetadata', function() {
@@ -367,13 +358,18 @@
                 const xOffset = (videoWidth - size) / 2;
                 const yOffset = (videoHeight - size) / 2;
                 
-                // 프레임 그리기 함수 수정
+                // 프레임 그리기 함수
                 window.drawVideoFrame = function() {
                     if (!video.paused && !video.ended) {
+                        videoContext.save();
+                        videoContext.clearRect(0, 0, SQUARE_SIZE, SQUARE_SIZE);
+                        
                         videoContext.drawImage(video, 
-                            xOffset, yOffset, size, size, // 소스 영역 (비디오에서 정사각형 부분)
-                            0, 0, SQUARE_SIZE, SQUARE_SIZE // 대상 영역 (캔버스 전체)
+                            xOffset, yOffset, size, size, // 소스 영역
+                            0, 0, SQUARE_SIZE, SQUARE_SIZE // 대상 영역
                         );
+                        
+                        videoContext.restore();
                         requestAnimationFrame(drawVideoFrame);
                     }
                 };
@@ -386,16 +382,22 @@
         // 카메라 설정 및 시작
         async function startCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
+                const constraints = {
                     video: {
                         facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 1280 }
+                        aspectRatio: { ideal: 1 }
                     }
-                });
+                };
+                
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 video.srcObject = stream;
-                video.play();
+                await video.play();
                 setupVideoAndCanvas();
+                
+                // 화면 크기 변경 시 재설정
+                window.addEventListener('resize', function() {
+                    setupVideoAndCanvas();
+                });
             } catch (error) {
                 console.error("Error accessing the camera: ", error);
             }
