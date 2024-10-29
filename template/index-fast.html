@@ -24,28 +24,13 @@
         #video-container {
             position: relative;
             width: 100%;
-            padding-bottom: 100%; /* 정사각형 비율 */
-            max-width: 650px;
-            margin-top: 10px;
-            overflow: auto;
-        }
-        #video {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
             height: auto;
-            object-fit: cover;
         }
-        #videoCanvas, #textCanvas {
-            position: absolute;
-            top: 0;
-            left: 0;
+        #video, #videoCanvas, #textCanvas {
             width: 100%;
-            height: 100%;
+            max-width: 640px;
+            height: auto;
+            display: block;
         }
         #videoCanvas {
             position: absolute;
@@ -186,10 +171,10 @@
                 width: 100%; /* 수정: 너비를 100%로 제한 */
             }
             #results-container {
-                width: 100%;
-                max-width: none;
+                width: 90%;
+                max-width: 600;
                 margin-top: 20px;
-                padding: 10px; /* 수정: 패딩 줄임 */
+                padding: 5px; /* 수정: 패딩 줄임 */
             }
             #resultsTable {
                 width: 100%;
@@ -208,7 +193,7 @@
 </head>
 <body>
     <div id="left-container">
-        <h1>Sushi Plate Detector WebSocket 수정9 뭔데... 개짜증</h1>
+        <h1>Sushi Plate Detector WebSocket 수정10 제발 마지막</h1>
         <div style="display: flex; align-items: center;">
             <select id="modelSelect">
                 <option value="yolov8n">YOLOv8n</option>
@@ -372,9 +357,7 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
-                        facingMode: "environment",
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
+                        facingMode: "environment"
                     }
                 });
                 video.srcObject = stream;
