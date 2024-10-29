@@ -102,6 +102,7 @@ def process_image(image_data: str, model_name: str) -> dict: # 클라이언트�
         inference_results = [] # 추론 결과 저장할 리스트 초기화
 
         if results: # 결과 존재 시 결과 박스에 저장된 객체 id와 라벨, 신뢰도, 좌표를 추출하여 딕셔너리 형태로 inference_results에 저장
+            print("결과 있음")
             for box in results[0].boxes:
                 track_id = int(box.id) if box.id is not None else None
                 class_id = int(box.cls)
@@ -147,10 +148,12 @@ async def websocket_endpoint(websocket: WebSocket): # WebSocket객체를 인자�
                 await websocket.send_json({"error": f"Model {model_name} not available"})
                 continue
 
+            print("received image")
             # 이미지 처리를 비동기로 실행
             results = await asyncio.to_thread(process_image, image_data, model_name)
             # send_inference_results 메서드를 호출하여 추론 결과를 클라이언트에 전송
             await manager.send_inference_results(websocket, results)
+            print("sended results")
 
     except WebSocketDisconnect: # 웹소켓 연결 끊어졌을때 예외처리
         manager.disconnect(websocket) # disconnect 메서드 호출
