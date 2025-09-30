@@ -35,4 +35,4 @@ steps:
       ]
 
 images:
-  - 'gcr.io/sushi-project-440000/yolo-app:v1'  # 태그를 v1로 수정
+  - 'gcr.io/sushi-project-440000/yolo-app:v1'  # 태그를 v1으로 수정

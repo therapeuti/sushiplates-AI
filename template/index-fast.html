@@ -3,41 +3,253 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sushi Plate Detector with WebSocket</title>
+    <title>SushiPlate AI - 초밥접시 감지 시스템</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* 기본 레이아웃 스타일 */
-        body {
-            display: flex;
-            flex-direction: row;
-            min-height: 100vh;
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-light: #eef2ff;
+            --secondary-color: #6b7280;
+            --secondary-light: #f9fafb;
+            --accent-color: #059669;
+            --accent-light: #ecfdf5;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --danger-light: #fef2f2;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-color: #e5e7eb;
+            --border-light: #f3f4f6;
+            --background: #ffffff;
+            --surface: #ffffff;
+            --surface-secondary: #f9fafb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+            --border-radius-sm: 8px;
+            --border-radius-lg: 16px;
+            --border-radius-xl: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
             margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
+            padding: 0;
             box-sizing: border-box;
         }
-        #left-container {
-            flex: 1;
-            max-width: 650px;
-            margin-right: 10px;
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
         }
+
+        .header {
+            background: var(--background);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .logo i {
+            font-size: 2rem;
+            color: var(--accent-color);
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-indicator.connected {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-indicator.disconnected {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .main-container {
+            flex: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .video-section {
+            background: var(--background);
+            border-radius: var(--border-radius-xl);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .video-section:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .video-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-title i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: var(--surface-secondary);
+            border-radius: var(--border-radius-lg);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .controls:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .select, .input {
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--background);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--transition);
+            min-width: 140px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .select:focus, .input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .select:hover, .input:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+
         #video-container {
             position: relative;
             width: 100%;
-            height: auto;
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            background: #000;
+            box-shadow: var(--shadow-xl);
+            border: 2px solid var(--border-light);
+            transition: var(--transition);
         }
+
+        #video-container:hover {
+            transform: scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+
         #video, #videoCanvas, #textCanvas {
             width: 100%;
-            max-width: 640px;
             height: auto;
             display: block;
         }
+
         #videoCanvas {
             position: absolute;
             left: 0;
             top: 0;
             z-index: 1;
         }
+
         #textCanvas {
             position: absolute;
             left: 0;
@@ -45,41 +257,249 @@
             z-index: 2;
             pointer-events: none;
         }
-        #results-container {
-            flex: 1;
-            min-width: 400px;
-            max-width: 480px;
-            padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
+
+        .results-section {
+            background: var(--background);
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
             height: fit-content;
-            overflow: auto;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
         }
-        /* 테이블 컨테이너 수정 */
-        .table-container {
+
+        .results-section:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .results-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--success-color) 0%, var(--warning-color) 100%);
+            border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+        }
+
+        .results-header {
+            padding: 2.5rem 2.5rem 1.5rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: var(--border-radius-lg);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            min-height: 52px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
             width: 100%;
-            max-height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
         }
-        /* 테이블 스타일 수정 */
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #6366f1 100%);
+            color: white;
+            border: 2px solid transparent;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-hover) 0%, #5b5bf6 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #4b5563 100%);
+            color: white;
+            border: 2px solid transparent;
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, var(--text-primary) 0%, #1f2937 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(107, 114, 128, 0.3);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent-color) 0%, #10b981 100%);
+            color: white;
+            border: 2px solid transparent;
+        }
+
+        .btn-accent:hover {
+            background: linear-gradient(135deg, #047857 0%, #059669 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.3);
+        }
+
+        .btn-accent:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 0 2.5rem 2rem;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            padding: 2rem;
+            border-radius: var(--border-radius-xl);
+            color: white;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .summary-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(79, 70, 229, 0.3);
+        }
+
+        .summary-card h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-card .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .table-container {
+            padding: 0 2.5rem 2.5rem;
+            overflow-x: auto;
+        }
+
+        .table-wrapper {
+            background: var(--background);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            border: 2px solid var(--border-light);
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+
+        .table-wrapper:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
         #resultsTable {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            background-color: white;
-            table-layout: fixed;
-            max-width:100%;
+            font-size: 0.875rem;
         }
-        /* 열 너비 조정 */
+
+        #resultsTable th {
+            background: linear-gradient(135deg, var(--surface-secondary) 0%, var(--border-light) 100%);
+            color: var(--text-primary);
+            font-weight: 700;
+            padding: 1.25rem 1rem;
+            text-align: left;
+            border-bottom: 3px solid var(--primary-color);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        #resultsTable td {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: middle;
+            background: var(--background);
+        }
+
+        #resultsTable tbody tr {
+            transition: var(--transition);
+        }
+
+        #resultsTable tbody tr:hover {
+            background: var(--surface-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        #resultsTable tbody tr:nth-child(even) {
+            background: rgba(249, 250, 251, 0.5);
+        }
+
+        #resultsTable tbody tr:nth-child(even):hover {
+            background: var(--surface-secondary);
+        }
+
         #resultsTable th:nth-child(1),
         #resultsTable td:nth-child(1) {
-            width: 40%;
+            width: 35%;
         }
         #resultsTable th:nth-child(2),
         #resultsTable td:nth-child(2) {
-            width: 20%;
+            width: 25%;
+            font-weight: 600;
+            color: var(--primary-color);
         }
         #resultsTable th:nth-child(3),
         #resultsTable td:nth-child(3) {
@@ -89,172 +509,377 @@
         #resultsTable td:nth-child(4),
         #resultsTable th:nth-child(5),
         #resultsTable td:nth-child(5) {
-            width: 20%;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 5px;
-            text-align: left;
-            word-wrap: break-word; /* 긴 텍스트 자동 줄바꿈 */
-            min-height: 20px; /* 최소 높이 설정 */
+            width: 10%;
+            text-align: center;
         }
 
-        /* 선택기와 버튼 크기 조정 */
         .label-select {
-            width: 90%;
-            padding: 5px;
-            box-sizing: border-box;
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            background: var(--background);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: var(--transition);
         }
+
+        .label-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
         .action-button {
-            padding: 4px 8px;
-            width: 80%;
-            margin: 2px;
-            white-space: normal; /* 버튼 텍스트 자동 줄바꿈 */
-            height: auto; /* 버튼 높이 자동 조절 */
-            min-height: 28px; /* 버튼 최소 높이 */
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
         }
+
+        .action-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0);
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .action-button:hover::before {
+            transform: scale(1);
+        }
+
         .delete-button {
-            background-color: #f44336;
+            background: linear-gradient(135deg, var(--danger-color) 0%, #dc2626 100%);
+            color: white;
         }
+
+        .delete-button:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
         .add-button {
-            background-color: #2196F3;
+            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            color: white;
         }
-        /* Add Result 섹션 스타일 */
+
+        .add-button:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
         .dropdown {
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 1.5rem 2.5rem;
+            position: relative;
         }
 
-        /* 반응형 레이아웃 */
+        .dropdown-trigger {
+            width: 100%;
+            padding: 1.5rem;
+            background: var(--surface-secondary);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--border-radius-lg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .dropdown-trigger:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--background);
+            border: 2px solid var(--border-light);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-xl);
+            z-index: 10;
+            margin-top: 0.75rem;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .dropdown.active .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition);
+            border-bottom: 1px solid var(--border-light);
+            font-weight: 500;
+        }
+
+        .dropdown-content a:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-content a:hover {
+            background: var(--primary-light);
+            color: var(--primary-color);
+            transform: translateX(4px);
+        }
+
+        .price-tag {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: var(--border-radius);
+            font-size: 0.75rem;
+            font-weight: 700;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @media screen and (max-width: 1024px) {
-            body {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 1rem;
+            }
+
+            .header {
+                padding: 1rem;
+            }
+
+            .logo {
+                font-size: 1.25rem;
+            }
+
+            .video-section,
+            .results-section {
+                padding: 1.5rem;
+            }
+
+            .controls {
                 flex-direction: column;
-                align-items: center;
-                padding: 10px;
+                gap: 1rem;
             }
-            #left-container {
-                margin-right: 0;
-                margin-bottom: 20px;
-                width: 100%;
-                max-width: 650;
+
+            .action-buttons {
+                flex-direction: column;
             }
-            #video-container {
-                margin-bottom: 20px;
-            }
-            #results-container {
-                width: 100%;
-                max-width: 640px;
-                margin-top: 20px;
-            }
-            table {
-                width: 100%;
-                font-size: 14px;
-            }
-            .label-select {
-                width: 100%;
-                min-width: 100px;
-            }
-            th, td {
-                padding: 6px;
+
+            .btn {
+                justify-content: center;
             }
         }
 
-        /* 작은 화면에서의 테이블 스크롤 */
         @media screen and (max-width: 640px) {
+            .main-container {
+                padding: 0.5rem;
+                gap: 1rem;
+            }
+
+            .video-section,
+            .results-section {
+                padding: 1rem;
+            }
+
             .table-container {
-                margin: 0; /* 수정: 마진 제거 */
-                padding: 0; /* 수정: 패딩 제거 */
-                width: 100%; /* 수정: 너비를 100%로 제한 */
+                padding: 0 1rem 1rem;
             }
-            #results-container {
-                width: 90%;
-                max-width: 600;
-                margin-top: 20px;
-                padding: 5px; /* 수정: 패딩 줄임 */
-            }
+
             #resultsTable {
-                width: 100%;
-                font-size: 12px; /* 수정: 폰트 크기 줄임 */
+                font-size: 0.75rem;
             }
+
+            #resultsTable th,
+            #resultsTable td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .summary-cards {
+                margin: 0 1rem 1rem;
+            }
+
+            .dropdown {
+                margin: 1rem;
+            }
+
             .action-button {
-                padding: 4px 8px;
-                font-size: 12px;
+                width: 28px;
+                height: 28px;
+                font-size: 0.75rem;
             }
-            th, td {
-                padding: 4px; /* 수정: 셀 패딩 줄임 */
-                font-size: 12px; /* 수정: 셀 폰트 크기 줄임 */
+
+            .section-title {
+                font-size: 1.125rem;
             }
         }
     </style>
 </head>
 <body>
-    <div id="left-container">
-        <h1>Sushi Plate Detector WebSocket 수정10 제발 마지막</h1>
-        <div style="display: flex; align-items: center;">
-            <select id="modelSelect">
-                <option value="yolov8n">YOLOv8n</option>
-                <option value="yolov8s">YOLOv8s</option>
-                <option value="yolov8m">YOLOv8m</option>
-                <option value="yolov9s">YOLOv9s</option>
-                <option value="yolo11s">YOLO11s</option>
-            </select>
-
-            <label for="fpsInput" style="margin-left: 10px;">FPS:</label>
-            <input type="number" id="fpsInput" min="1" max="50" value="1" style="margin-left: 5px;">
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-utensils"></i>
+                <span>SushiPlate AI</span>
+            </div>
+            <div class="status-indicator disconnected" id="connectionStatus">
+                <div class="status-dot"></div>
+                <span>연결 대기중</span>
+            </div>
         </div>
+    </header>
 
-        <div id="video-container">
-            <video id="video" autoplay playsinline></video>
-            <canvas id="videoCanvas"></canvas>
-            <canvas id="textCanvas"></canvas>
-        </div>
-    </div>
-    <div id="results-container">
-        <button id="startInference">Start Inference</button>
-        <button id="stopInference">Stop Inference</button>
-        <button id="3seconds">3초 추론 후 결과 종합</button>
-        <h2>Detection Results</h2>
-        <div class="table-container">
-            <table id="resultsTable">
-                <thead>
-                    <tr>
-                        <th>Plate Color</th>
-                        <th>Price per Plate</th>
-                        <th>Check State</th>
-                        <th>Delete</th>
-                        <th>Add</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        </div>
+    <div class="main-container">
+        <div class="video-section">
+            <div class="section-title">
+                <i class="fas fa-video"></i>
+                <span>실시간 카메라</span>
+            </div>
 
-        <div class="dropdown">
-            <button id="dropbtn">Add Result</button>
-            <div class="dropdown-content">
-                <a href="#" onclick="addItem('black', 10000)">black</a>
-                <a href="#" onclick="addItem('blue', 9000)">blue</a>
-                <a href="#" onclick="addItem('green', 8000)">green</a>
-                <a href="#" onclick="addItem('orange', 7000)">orange</a>
-                <a href="#" onclick="addItem('orange-rec', 6000)">orange-rec</a>
-                <a href="#" onclick="addItem('orange-vivid', 5000)">orange-vivid</a>
-                <a href="#" onclick="addItem('purple', 4000)">purple</a>
-                <a href="#" onclick="addItem('red', 3000)">red</a>
-                <a href="#" onclick="addItem('yellow', 2000)">yellow</a>
-                <a href="#" onclick="addItem('yellow-rec', 1000)">yellow-rec</a>
+            <div class="controls">
+                <div class="control-group">
+                    <label class="control-label">AI 모델 선택</label>
+                    <select id="modelSelect" class="select">
+                        <option value="yolov8n">YOLOv8n (빠름)</option>
+                        <option value="yolov8s">YOLOv8s (균형)</option>
+                        <option value="yolov8m">YOLOv8m (정확)</option>
+                        <option value="yolov9s">YOLOv9s (최신)</option>
+                        <option value="yolo11s">YOLO11s (최고성능)</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label class="control-label">처리 속도 (FPS)</label>
+                    <input type="number" id="fpsInput" min="1" max="30" value="5" class="input">
+                </div>
+            </div>
+
+            <div id="video-container">
+                <video id="video" autoplay playsinline></video>
+                <canvas id="videoCanvas"></canvas>
+                <canvas id="textCanvas"></canvas>
             </div>
         </div>
 
-        <h3>총 접시 개수: <span id="totalPlates">0</span> 개</h3>
-        <h3>합산 금액: <span id="totalPrice">0</span> 원</h3>
+        <div class="results-section">
+            <div class="results-header">
+                <div class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    <span>감지 결과</span>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="startInference" class="btn btn-primary">
+                        <i class="fas fa-play"></i>
+                        <span>실시간 감지 시작</span>
+                    </button>
+                    <button id="stopInference" class="btn btn-secondary">
+                        <i class="fas fa-stop"></i>
+                        <span>감지 중지</span>
+                    </button>
+                    <button id="3seconds" class="btn btn-accent">
+                        <i class="fas fa-clock"></i>
+                        <span>3초 정밀 감지</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h3>총 접시 개수</h3>
+                    <div class="value"><span id="totalPlates">0</span>개</div>
+                </div>
+                <div class="summary-card">
+                    <h3>합계 금액</h3>
+                    <div class="value">₩<span id="totalPrice">0</span></div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-wrapper">
+                    <table id="resultsTable">
+                        <thead>
+                            <tr>
+                                <th>접시 색상</th>
+                                <th>접시당 가격</th>
+                                <th>정확도</th>
+                                <th>삭제</th>
+                                <th>추가</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="dropdown" id="addDropdown">
+                <div class="dropdown-trigger" onclick="toggleDropdown()">
+                    <i class="fas fa-plus"></i>
+                    <span>접시 수동 추가</span>
+                </div>
+                <div class="dropdown-content">
+                    <a href="#" onclick="addItem('black', 10000)">black <span class="price-tag">₩10,000</span></a>
+                    <a href="#" onclick="addItem('blue', 9000)">blue <span class="price-tag">₩9,000</span></a>
+                    <a href="#" onclick="addItem('green', 8000)">green <span class="price-tag">₩8,000</span></a>
+                    <a href="#" onclick="addItem('orange', 7000)">orange <span class="price-tag">₩7,000</span></a>
+                    <a href="#" onclick="addItem('orange-rec', 6000)">orange-rec <span class="price-tag">₩6,000</span></a>
+                    <a href="#" onclick="addItem('orange-vivid', 5000)">orange-vivid <span class="price-tag">₩5,000</span></a>
+                    <a href="#" onclick="addItem('purple', 4000)">purple <span class="price-tag">₩4,000</span></a>
+                    <a href="#" onclick="addItem('red', 3000)">red <span class="price-tag">₩3,000</span></a>
+                    <a href="#" onclick="addItem('yellow', 2000)">yellow <span class="price-tag">₩2,000</span></a>
+                    <a href="#" onclick="addItem('yellow-rec', 1000)">yellow-rec <span class="price-tag">₩1,000</span></a>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script> //자바 스크립트 동적 기능 구현 내용
+    <script>
         let ws = null;
         const video = document.getElementById('video');
         const videoCanvas = document.getElementById('videoCanvas');
@@ -266,6 +891,10 @@
         const resultsTable = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
         const totalPriceSpan = document.getElementById('totalPrice');
         const totalPlatesSpan = document.getElementById('totalPlates');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const startBtn = document.getElementById('startInference');
+        const stopBtn = document.getElementById('stopInference');
+        const threeSecBtn = document.getElementById('3seconds');
 
         let isInferenceRunning = false;
         let lastInferenceTime = 0;
@@ -274,14 +903,50 @@
         let totalInferenceFrames = 0;
         let isCollectingResults = false;
 
-        // WebSocket 연결 함수 수정
+        function updateConnectionStatus(connected) {
+            if (connected) {
+                connectionStatus.className = 'status-indicator connected';
+                connectionStatus.innerHTML = '<div class="status-dot"></div><span>연결됨</span>';
+            } else {
+                connectionStatus.className = 'status-indicator disconnected';
+                connectionStatus.innerHTML = '<div class="status-dot"></div><span>연결 끊김</span>';
+            }
+        }
+
+        function updateButtonStates(inferenceRunning) {
+            if (inferenceRunning) {
+                startBtn.disabled = true;
+                startBtn.innerHTML = '<div class="loading"></div><span>감지 중...</span>';
+                stopBtn.disabled = false;
+                threeSecBtn.disabled = true;
+            } else {
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<i class="fas fa-play"></i><span>실시간 감지 시작</span>';
+                stopBtn.disabled = false;
+                threeSecBtn.disabled = false;
+            }
+        }
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('addDropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('addDropdown');
+            if (!dropdown.contains(event.target)) {
+                dropdown.classList.remove('active');
+            }
+        });
+
+        // WebSocket 연결 함수
         function connectWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
             ws = new WebSocket(`${protocol}://${window.location.host}/ws`);
 
             ws.onopen = function() {
                 console.log('WebSocket connected');
-                // 연결 즉시 상태 확인
+                updateConnectionStatus(true);
                 console.log('WebSocket state:', ws.readyState);
             };
 
@@ -315,6 +980,8 @@
 
             ws.onclose = function(event) {
                 console.log('WebSocket disconnected with code:', event.code);
+                updateConnectionStatus(false);
+                updateButtonStates(false);
                 if (isInferenceRunning) {
                     console.log('Attempting to reconnect...');
                     setTimeout(connectWebSocket, 1000);
@@ -328,7 +995,6 @@
 
         function setupVideoAndCanvas() {
             video.addEventListener('loadedmetadata', function() {
-                // 비디오의 실제 너비와 높이를 캔버스에 적용
                 const videoWidth = video.videoWidth;
                 const videoHeight = video.videoHeight;
 
@@ -337,22 +1003,17 @@
                 textCanvas.width = videoWidth;
                 textCanvas.height = videoHeight;
 
-                // 프레임을 캔버스에 그리는 함수
                 window.drawVideoFrame = function() {
                     if (!video.paused && !video.ended) {
-                        // 비디오 화면을 그대로 캔버스에 출력
                         videoContext.drawImage(video, 0, 0, videoWidth, videoHeight);
                         requestAnimationFrame(drawVideoFrame);
                     }
                 };
 
-                // 프레임 그리기 시작
                 drawVideoFrame();
             });
         }
 
-
-        // 카메라 설정 및 시작
         async function startCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
@@ -368,10 +1029,8 @@
             }
         }
 
-        // 페이지 로드 시 카메라 시작
         startCamera();
 
-        // 이미지 전송 함수 수정
         function startInference() {
             if (!isInferenceRunning) return;
 
@@ -387,15 +1046,13 @@
             lastInferenceTime = currentTime;
 
             try {
-                // 캔버스의 현재 상태 확인
                 console.log('Canvas dimensions:', {
                     width: videoCanvas.width,
                     height: videoCanvas.height
                 });
 
-                // 이미지 품질 설정 추가
                 const imageData = videoCanvas.toDataURL('image/jpeg', 0.8);
-                const imageSize = Math.round((imageData.length - 22) * 3 / 4 / 1024); // Base64 크기를 KB로 계산
+                const imageSize = Math.round((imageData.length - 22) * 3 / 4 / 1024);
                 console.log('Image size:', imageSize, 'KB');
 
                 if (ws && ws.readyState === WebSocket.OPEN) {
@@ -421,7 +1078,6 @@
             requestAnimationFrame(startInference);
         }
 
-        // 추론 시작 버튼 이벤트 리스너 수정
         document.getElementById('startInference').addEventListener('click', function() {
             console.log('Starting inference...');
             if (!ws || ws.readyState !== WebSocket.OPEN) {
@@ -429,18 +1085,18 @@
                 connectWebSocket();
             }
             isInferenceRunning = true;
+            updateButtonStates(true);
             requestAnimationFrame(startInference);
         });
 
-        // 추론 종료 버튼 기능
         document.getElementById('stopInference').addEventListener('click', function() {
             isInferenceRunning = false;
+            updateButtonStates(false);
             if (ws) {
                 ws.close();
             }
         });
 
-        // 접시 색상과 가격 맵핑
         const platePrices = {
             'black': 10000,
             'blue': 9000,
@@ -454,7 +1110,7 @@
             'yellow-rec': 1000
         };
 
-        function drawResultTexts(results) { // 비디오 캔버스에 추론 결과 표시하는 함수
+        function drawResultTexts(results) {
             textContext.clearRect(0, 0, textCanvas.width, textCanvas.height);
             results.forEach(result => {
                 const coords = result.coords;
@@ -477,7 +1133,7 @@
             });
         }
 
-        function getColorForLabel(label) {  // 라벨 별로 텍스트 색상 맵핑하는 함수
+        function getColorForLabel(label) {
             const colorMapping = {
                 'black': 'rgb(0, 0, 0)',
                 'blue': 'rgb(0, 0, 255)',
@@ -494,35 +1150,28 @@
         }
 
         function updateResultsTable(results) {
-            // tbody 요소 확실하게 가져오기
             const tbody = document.getElementById('resultsTable').querySelector('tbody');
             if (!tbody) {
                 console.error('Table body not found');
                 return;
             }
 
-            // 기존 행들 제거
             tbody.innerHTML = '';
-
-            // 결과를 y좌표 기준으로 정렬
             results.sort((a, b) => a.coords[3] - b.coords[3]);
 
             results.forEach(result => {
                 const row = tbody.insertRow();
 
-                // Label select cell
                 const labelCell = row.insertCell(0);
                 labelCell.appendChild(createLabelSelect(result.label));
 
-                // Price cell
                 const priceCell = row.insertCell(1);
-                priceCell.textContent = platePrices[result.label] + ' 원';
+                priceCell.textContent = '₩' + platePrices[result.label].toLocaleString();
 
-                // Check state cell
-                const checkStateCell = row.insertCell(2);
-                checkStateCell.textContent = result.check_state || '';
+                const accuracyCell = row.insertCell(2);
+                const confidence = Math.round((result.confidence || 0) * 100);
+                accuracyCell.innerHTML = `<span style="color: ${confidence > 80 ? 'var(--success-color)' : confidence > 60 ? 'var(--warning-color)' : 'var(--danger-color)'};">${confidence}%</span>`;
 
-                // Delete button cell
                 const deleteCell = row.insertCell(3);
                 const deleteButton = document.createElement('button');
                 deleteButton.textContent = '-';
@@ -530,7 +1179,6 @@
                 deleteButton.onclick = () => removeItem(deleteButton);
                 deleteCell.appendChild(deleteButton);
 
-                // Add button cell
                 const addCell = row.insertCell(4);
                 const addButton = document.createElement('button');
                 addButton.textContent = '+';
@@ -544,43 +1192,37 @@
             updateTotalPrice();
         }
 
-        function updateTotalPrice() { // 결과 테이블 내용 바탕으로 합산 금액 계산하는 함수
+        function updateTotalPrice() {
             let totalPrice = 0;
             let totalPlates = 0;
             const rows = resultsTable.rows;
 
             for (let i = 0; i < rows.length; i++) {
                 const priceText = rows[i].cells[1].textContent;
-                const priceValue = parseInt(priceText.replace(' 원', ''), 10) || 0;
+                const priceValue = parseInt(priceText.replace(/[₩,]/g, ''), 10) || 0;
                 totalPrice += priceValue;
             }
 
             totalPlates = rows.length;
-            totalPriceSpan.textContent = totalPrice;
+            totalPriceSpan.textContent = totalPrice.toLocaleString();
             totalPlatesSpan.textContent = totalPlates;
         }
 
-
-
         function addItem(name, value) {
-            event.preventDefault(); // 링크의 기본 동작을 막습니다
+            event.preventDefault();
             const tbody = document.getElementById('resultsTable').querySelector('tbody');
             if (tbody) {
                 addNewRow(null, name);
             }
         }
 
-
-
-        function removeItem(button) { // 결과 테이블에서 행 삭제하는 함수
+        function removeItem(button) {
             const row = button.parentNode.parentNode;
             row.parentNode.removeChild(row);
             updateTotalPrice();
         }
 
-
-        function processAggregatedResults(results, totalFrames) { // 3초 추론시 결과 종합하는 함수
-            // Track ID별로 결과를 그룹화
+        function processAggregatedResults(results, totalFrames) {
             const trackGroups = new Map();
 
             results.forEach(result => {
@@ -593,12 +1235,10 @@
             const finalResults = [];
 
             trackGroups.forEach((trackResults, trackId) => {
-                // 해당 track_id가 전체 프레임의 1/2 이상 감지되었는지 확인
                 if (trackResults.length <= totalFrames / 2) {
                     return;
                 }
 
-                // 라벨별 통계 수집
                 const labelStats = new Map();
                 trackResults.forEach(result => {
                     if (!labelStats.has(result.label)) {
@@ -611,10 +1251,9 @@
                     const stats = labelStats.get(result.label);
                     stats.count++;
                     stats.totalConfidence += result.confidence;
-                    stats.coords = result.coords; // 마지막 좌표 사용
+                    stats.coords = result.coords;
                 });
 
-                // 라벨이 모두 동일한지 확인
                 if (labelStats.size === 1) {
                     const [label, stats] = labelStats.entries().next().value;
                     finalResults.push({
@@ -627,7 +1266,6 @@
                     return;
                 }
 
-                // 가장 빈도가 높은 라벨 찾기
                 let maxCount = 0;
                 let maxLabel = '';
                 let maxAvgConfidence = 0;
@@ -639,7 +1277,6 @@
                     }
                 });
 
-                // 가장 높은 평균 신뢰도를 가진 라벨 찾기
                 let maxConfidenceLabel = '';
                 let maxConfidence = 0;
                 labelStats.forEach((stats, label) => {
@@ -650,9 +1287,7 @@
                     }
                 });
 
-                // 최빈값이 전체의 2/3 이상인지 확인
                 if (maxCount >= (trackResults.length * 2 / 3)) {
-                    // 최빈값 라벨과 최고 신뢰도 라벨이 같은 경우
                     if (maxLabel === maxConfidenceLabel) {
                         finalResults.push({
                             track_id: trackId,
@@ -684,13 +1319,11 @@
             return finalResults;
         }
 
-        function startThreeSecondInference() { // 3초 추론 버튼 누르면 실행되는 함수
-            // 초기화
+        function startThreeSecondInference() {
             aggregatedResults = [];
             isCollectingResults = true;
             totalInferenceFrames = 0;
 
-            // 추론이 실행 중이 아니면 시작
             if (!isInferenceRunning) {
                 if (!ws || ws.readyState !== WebSocket.OPEN) {
                     connectWebSocket();
@@ -699,7 +1332,6 @@
                 requestAnimationFrame(startInference);
             }
 
-            // 3초 후 종료
             inferenceTimeout = setTimeout(() => {
                 isCollectingResults = false;
                 isInferenceRunning = false;
@@ -714,7 +1346,6 @@
             }, 3000);
         }
 
-        // 3seconds 버튼에 이벤트 리스너 추가
         document.getElementById('3seconds').addEventListener('click', function() {
             if (inferenceTimeout) {
                 clearTimeout(inferenceTimeout);
@@ -737,7 +1368,7 @@
             select.addEventListener('change', function() {
                 const row = this.closest('tr');
                 const priceCell = row.cells[1];
-                priceCell.textContent = platePrices[this.value] + ' 원';
+                priceCell.textContent = '₩' + platePrices[this.value].toLocaleString();
                 updateTotalPrice();
             });
 
@@ -753,18 +1384,15 @@
 
             const newRow = document.createElement('tr');
 
-            // Label select cell
             const labelCell = newRow.insertCell(0);
             labelCell.appendChild(createLabelSelect(label));
 
-            // Price cell
             const priceCell = newRow.insertCell(1);
-            priceCell.textContent = platePrices[label] + ' 원';
+            priceCell.textContent = '₩' + platePrices[label].toLocaleString();
 
-            // Check state cell
-            newRow.insertCell(2);
+            const accuracyCell = newRow.insertCell(2);
+            accuracyCell.innerHTML = '<span style="color: var(--text-muted);">수동 추가</span>';
 
-            // Delete button cell
             const deleteCell = newRow.insertCell(3);
             const deleteButton = document.createElement('button');
             deleteButton.textContent = '-';
@@ -772,7 +1400,6 @@
             deleteButton.onclick = () => removeItem(deleteButton);
             deleteCell.appendChild(deleteButton);
 
-            // Add button cell
             const addCell = newRow.insertCell(4);
             const addButton = document.createElement('button');
             addButton.textContent = '+';
@@ -781,19 +1408,15 @@
                 addNewRow(this.closest('tr'));
             };
             addCell.appendChild(addButton);
-            
+
             if (insertAfterRow) {
                 insertAfterRow.parentNode.insertBefore(newRow, insertAfterRow.nextSibling);
             } else {
                 tbody.appendChild(newRow);
             }
-            
+
             updateTotalPrice();
         }
-
-
-
-
     </script>
 </body>
 </html>
