@@ -163,7 +163,7 @@ async def websocket_endpoint(websocket: WebSocket): # WebSocket객체를 인자�
 
 
 if __name__ == "__main__":
-    import uvicorn  # ASGI서버로 FastAPI 애플리케이션 실행하는데 사용
+    import uvicorn  # ASGI서버로 FastAPI 애플리케이션 실행하는데 사용 
 
     port = int(os.environ.get('PORT', 8080)) # 환경변수에서 포트 번호 가져오고, 없으면 기본값으로 8080 사용
     uvicorn.run(app, host="0.0.0.0", port=port) # uvicorn을 사용하여 FastAPI 애플리케이션 실행. 모든 IP주소에서 접근 가능하도록 호스트를 0.0.0.0으로 설정. port에서 서버 실행
