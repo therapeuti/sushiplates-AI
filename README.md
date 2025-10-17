@@ -178,20 +178,4 @@ model_paths = {
 - **3초 정밀 감지**: ~95% 정확도
 - **노이즈 필터링**: 오감지 90% 감소
 
-## 🤝 기여하기
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
-
-## 🙏 감사의 말
-
-- [Ultralytics](https://ultralytics.com) - YOLO 모델 제공
-- [FastAPI](https://fastapi.tiangolo.com) - 훌륭한 웹 프레임워크
-- [Google Cloud](https://cloud.google.com) - 클라우드 인프라
