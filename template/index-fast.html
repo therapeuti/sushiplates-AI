@@ -2,7 +2,10 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SushiPlate AI">
     <title>SushiPlate AI - 초밥접시 감지 시스템</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -58,7 +61,7 @@
         .header {
             background: var(--background);
             border-bottom: 1px solid var(--border-color);
-            padding: 1.5rem 2rem;
+            padding: 1rem 1rem;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -118,17 +121,17 @@
             flex: 1;
             max-width: 1400px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 1rem;
             display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 2rem;
+            grid-template-columns: 1fr;
+            gap: 1rem;
             width: 100%;
         }
 
         .video-section {
             background: var(--background);
             border-radius: var(--border-radius-xl);
-            padding: 2.5rem;
+            padding: 1rem;
             box-shadow: var(--shadow-lg);
             border: 1px solid var(--border-light);
             position: relative;
@@ -155,11 +158,45 @@
         .section-title {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-            font-size: 1.25rem;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
             font-weight: 600;
             color: var(--text-primary);
+            justify-content: space-between;
+        }
+
+        .section-title-content {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .section-controls .control-group {
+            margin: 0;
+            min-width: 180px;
+        }
+
+        .section-controls .control-group:first-child {
+            min-width: 117px;
+        }
+
+        .section-controls .control-label {
+            font-size: 0.75rem;
+        }
+
+        .section-controls .select,
+        .section-controls .input {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            min-width: auto;
+            width: 100%;
         }
 
         .section-title i {
@@ -170,14 +207,20 @@
         .controls {
             display: flex;
             flex-wrap: wrap;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-            padding: 2rem;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
             background: var(--surface-secondary);
             border-radius: var(--border-radius-lg);
             border: 1px solid var(--border-light);
             box-shadow: var(--shadow-sm);
             transition: var(--transition);
+        }
+
+        .video-controls-wrapper {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
         }
 
         .controls:hover {
@@ -224,6 +267,7 @@
         #video-container {
             position: relative;
             width: 100%;
+            aspect-ratio: 16 / 9;
             border-radius: var(--border-radius-lg);
             overflow: hidden;
             background: #000;
@@ -267,7 +311,7 @@
             flex-direction: column;
             height: fit-content;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
             transition: var(--transition);
         }
 
@@ -288,33 +332,35 @@
         }
 
         .results-header {
-            padding: 2.5rem 2.5rem 1.5rem;
+            padding: 1rem 1rem 0.75rem;
         }
 
         .action-buttons {
             display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-bottom: 1rem;
+            flex-wrap: nowrap;
         }
 
         .btn {
-            padding: 1rem 2rem;
+            padding: 0.6rem 0.8rem;
             border: none;
             border-radius: var(--border-radius-lg);
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.75rem;
+            gap: 0.35rem;
             text-decoration: none;
-            min-height: 52px;
+            min-height: 30px;
             position: relative;
             overflow: hidden;
             box-shadow: var(--shadow-md);
+            flex: 1;
+            min-width: auto;
         }
 
         .btn::before {
@@ -384,15 +430,14 @@
         }
 
         .summary-cards {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-            margin: 0 2.5rem 2rem;
+            display: flex;
+            gap: 1rem;
+            margin: 0 1rem 1rem;
         }
 
         .summary-card {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: var(--border-radius-xl);
             color: white;
             text-align: center;
@@ -401,6 +446,7 @@
             position: relative;
             overflow: hidden;
             transition: var(--transition);
+            flex: 1;
         }
 
         .summary-card::before {
@@ -419,19 +465,19 @@
         }
 
         .summary-card h3 {
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             font-weight: 500;
             opacity: 0.9;
             margin-bottom: 0.5rem;
         }
 
         .summary-card .value {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
         }
 
         .table-container {
-            padding: 0 2.5rem 2.5rem;
+            padding: 0 1rem 1rem;
             overflow-x: auto;
         }
 
@@ -587,13 +633,13 @@
         }
 
         .dropdown {
-            margin: 1.5rem 2.5rem;
+            margin: 1rem;
             position: relative;
         }
 
         .dropdown-trigger {
             width: 100%;
-            padding: 1.5rem;
+            padding: 1rem;
             background: var(--surface-secondary);
             border: 2px dashed var(--border-color);
             border-radius: var(--border-radius-lg);
@@ -603,9 +649,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.875rem;
             box-shadow: var(--shadow-sm);
         }
 
@@ -709,54 +755,290 @@
             }
 
             .action-buttons {
-                flex-direction: column;
+                flex-wrap: nowrap;
+                gap: 0.3rem;
             }
 
             .btn {
                 justify-content: center;
+                flex: 1;
+                min-width: auto;
+                padding: 0.5rem 0.6rem;
+                font-size: 0.65rem;
             }
         }
 
-        @media screen and (max-width: 640px) {
+        @media screen and (max-width: 768px) {
             .main-container {
                 padding: 0.5rem;
-                gap: 1rem;
+                gap: 0.75rem;
+            }
+
+            .section-title {
+                gap: 0.75rem;
+            }
+
+            .section-controls {
+                flex-direction: row;
+                gap: 0.75rem;
+            }
+
+            .section-controls .control-group {
+                flex: 1;
+                min-width: 120px;
+            }
+
+            .section-controls .select,
+            .section-controls .input {
+                padding: 0.4rem 0.5rem;
+                font-size: 0.7rem;
+            }
+
+            .section-controls .control-label {
+                font-size: 0.65rem;
             }
 
             .video-section,
             .results-section {
-                padding: 1rem;
+                padding: 0.75rem;
             }
 
             .table-container {
-                padding: 0 1rem 1rem;
+                padding: 0 0.75rem 0.75rem;
+            }
+
+            .control-group {
+                flex: 1;
+                min-width: 140px;
+            }
+
+            .select, .input {
+                width: 100%;
+                padding: 0.75rem 1rem;
             }
 
             #resultsTable {
-                font-size: 0.75rem;
+                font-size: 0.7rem;
             }
 
             #resultsTable th,
             #resultsTable td {
-                padding: 0.75rem 0.5rem;
+                padding: 0.5rem 0.25rem;
             }
 
             .summary-cards {
-                margin: 0 1rem 1rem;
+                margin: 0 0.75rem 0.75rem;
+                gap: 0.75rem;
             }
 
             .dropdown {
-                margin: 1rem;
+                margin: 0.75rem;
+            }
+
+            .action-button {
+                width: 32px;
+                height: 32px;
+                font-size: 0.7rem;
+            }
+
+            .section-title {
+                font-size: 1rem;
+            }
+
+            .action-buttons {
+                gap: 0.15rem;
+                margin-bottom: 0.75rem;
+                padding: 0 0.25rem;
+            }
+
+            .btn {
+                padding: 0.4rem 0.5rem;
+                font-size: 0.55rem;
+                min-height: 34px;
+                gap: 0.2rem;
+            }
+
+            .btn span {
+                display: none;
+            }
+
+            .btn i {
+                margin: 0;
+                font-size: 0.65rem;
+            }
+
+            .results-section {
+                height: auto;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            body {
+                background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            }
+
+            .header {
+                padding: 0.75rem 0.75rem;
+            }
+
+            .logo {
+                font-size: 1rem;
+            }
+
+            .logo i {
+                font-size: 1.25rem;
+            }
+
+            .main-container {
+                padding: 0.25rem;
+                gap: 0.5rem;
+                grid-template-columns: 1fr;
+            }
+
+            .section-title {
+                flex-direction: row;
+                align-items: center;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+
+            .section-title-content {
+                flex-shrink: 0;
+            }
+
+            .section-controls {
+                flex-direction: row;
+                gap: 0.5rem;
+                flex: 1;
+            }
+
+            .section-controls .control-group {
+                flex: 1;
+                min-width: 60px;
+            }
+
+            .section-controls .control-label {
+                font-size: 0.6rem;
+            }
+
+            .section-controls .select,
+            .section-controls .input {
+                padding: 0.35rem 0.4rem;
+                font-size: 0.65rem;
+            }
+
+            .video-controls-wrapper {
+                flex-direction: column;
+            }
+
+            .video-section,
+            .results-section {
+                padding: 0.5rem;
+                border-radius: 8px;
+            }
+
+            .controls {
+                padding: 0.75rem;
+                gap: 0.5rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .control-group {
+                width: 100%;
+            }
+
+            .select, .input {
+                padding: 0.625rem 0.875rem;
+                font-size: 0.75rem;
+                min-width: auto;
+            }
+
+            .section-title {
+                font-size: 0.95rem;
+                margin-bottom: 0.75rem;
+            }
+
+            #modelSelect {
+                width: 100px;
+            }
+            #fpsInput {
+                width: 60px;
+            }
+
+            .action-buttons {
+                gap: 0.1rem;
+                margin-bottom: 0.5rem;
+                padding: 0 0.25rem;
+            }
+
+            .btn {
+                padding: 0.35rem 0.4rem;
+                font-size: 0.5rem;
+                min-height: 32px;
+                flex: 1;
+                gap: 0.15rem;
+            }
+
+            .btn span {
+                display: inline;
+            }
+
+            .btn i {
+                font-size: 0.55rem;
+            }
+
+            .summary-cards {
+                margin: 0 0.5rem 0.75rem;
+                gap: 0.5rem;
+            }
+
+            .summary-card {
+                padding: 1rem;
+                flex: 1;
+            }
+
+            .summary-card h3 {
+                font-size: 0.65rem;
+            }
+
+            .summary-card .value {
+                font-size: 1rem;
+            }
+
+            .table-container {
+                padding: 0 0.5rem 0.5rem;
+            }
+
+            #resultsTable {
+                font-size: 0.65rem;
+            }
+
+            #resultsTable th,
+            #resultsTable td {
+                padding: 0.4rem 0.2rem;
             }
 
             .action-button {
                 width: 28px;
                 height: 28px;
+                font-size: 0.6rem;
+            }
+
+            .dropdown {
+                margin: 0.5rem;
+            }
+
+            .dropdown-trigger {
+                padding: 0.75rem;
                 font-size: 0.75rem;
             }
 
-            .section-title {
-                font-size: 1.125rem;
+            .results-header {
+                padding: 0.75rem 0.75rem 0.5rem;
+            }
+
+            .label-select {
+                font-size: 0.7rem;
             }
         }
     </style>
@@ -778,31 +1060,47 @@
     <div class="main-container">
         <div class="video-section">
             <div class="section-title">
-                <i class="fas fa-video"></i>
-                <span>실시간 카메라</span>
-            </div>
-
-            <div class="controls">
-                <div class="control-group">
-                    <label class="control-label">AI 모델 선택</label>
-                    <select id="modelSelect" class="select">
-                        <option value="yolov8n">YOLOv8n (빠름)</option>
-                        <option value="yolov8s">YOLOv8s (균형)</option>
-                        <option value="yolov8m">YOLOv8m (정확)</option>
-                        <option value="yolov9s">YOLOv9s (최신)</option>
-                        <option value="yolo11s">YOLO11s (최고성능)</option>
-                    </select>
+                <div class="section-title-content">
+                    <i class="fas fa-video"></i>
+                    <!-- <span>실시간 카메라</span> -->
                 </div>
-                <div class="control-group">
-                    <label class="control-label">처리 속도 (FPS)</label>
-                    <input type="number" id="fpsInput" min="1" max="30" value="5" class="input">
+                <div class="section-controls">
+                    <div class="control-group">
+                        <label class="control-label">모델</label>
+                        <select id="modelSelect" class="select">
+                            <option value="yolov8n">YOLOv8n</option>
+                            <option value="yolov8s">YOLOv8s</option>
+                            <option value="yolov8m">YOLOv8m</option>
+                            <option value="yolov9s">YOLOv9s</option>
+                            <option value="yolo11s">YOLO11s</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">FPS</label>
+                        <input type="number" id="fpsInput" min="1" max="30" value="5" class="input">
+                    </div>
                 </div>
             </div>
 
             <div id="video-container">
-                <video id="video" autoplay playsinline></video>
+                <video id="video" autoplay muted playsinline webkit-playsinline></video>
                 <canvas id="videoCanvas"></canvas>
                 <canvas id="textCanvas"></canvas>
+            </div>
+
+            <div class="action-buttons">
+                <button id="startInference" class="btn btn-primary">
+                    <i class="fas fa-play"></i>
+                    <span>실시간 추론</span>
+                </button>
+                <button id="stopInference" class="btn btn-secondary">
+                    <i class="fas fa-stop"></i>
+                    <span>중지</span>
+                </button>
+                <button id="3seconds" class="btn btn-accent">
+                    <i class="fas fa-clock"></i>
+                    <span>3초 추론</span>
+                </button>
             </div>
         </div>
 
@@ -811,21 +1109,6 @@
                 <div class="section-title">
                     <i class="fas fa-chart-line"></i>
                     <span>감지 결과</span>
-                </div>
-
-                <div class="action-buttons">
-                    <button id="startInference" class="btn btn-primary">
-                        <i class="fas fa-play"></i>
-                        <span>실시간 감지 시작</span>
-                    </button>
-                    <button id="stopInference" class="btn btn-secondary">
-                        <i class="fas fa-stop"></i>
-                        <span>감지 중지</span>
-                    </button>
-                    <button id="3seconds" class="btn btn-accent">
-                        <i class="fas fa-clock"></i>
-                        <span>3초 정밀 감지</span>
-                    </button>
                 </div>
             </div>
 
@@ -1016,20 +1299,208 @@
 
         async function startCamera() {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: "environment"
+                // 디버깅 정보를 alert로 표시
+                const debugInfo = `
+카메라 정보:
+mediaDevices: ${!!navigator.mediaDevices}
+mediaDevices.getUserMedia: ${!!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)}
+webkitGetUserMedia: ${!!navigator.webkitGetUserMedia}
+mozGetUserMedia: ${!!navigator.mozGetUserMedia}
+getUserMedia: ${!!navigator.getUserMedia}
+
+User Agent: ${navigator.userAgent.substring(0, 100)}...
+                `;
+                console.log('카메라 요청 시작...');
+                console.log('User Agent:', navigator.userAgent);
+                console.log('navigator.mediaDevices:', !!navigator.mediaDevices);
+                console.log('navigator.getUserMedia:', !!navigator.getUserMedia);
+                console.log('navigator.webkitGetUserMedia:', !!navigator.webkitGetUserMedia);
+                console.log('navigator.mozGetUserMedia:', !!navigator.mozGetUserMedia);
+                console.log('디버깅 정보:', debugInfo);
+
+                // Safari에서 getUserMedia 지원 확인 및 polyfill
+                let getUserMedia = null;
+
+                // 방법 0: iOS Safari를 위한 특별 처리 - mediaDevices polyfill
+                if (!navigator.mediaDevices && navigator.webkitGetUserMedia) {
+                    console.log('방법 0: iOS Safari 감지 - mediaDevices polyfill 적용');
+                    navigator.mediaDevices = {
+                        getUserMedia: function(constraints) {
+                            return new Promise((resolve, reject) => {
+                                navigator.webkitGetUserMedia(constraints, resolve, reject);
+                            });
+                        }
+                    };
+                }
+
+                // 방법 1: 표준 API (Chrome, Firefox, Edge 등)
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    console.log('방법 1: mediaDevices.getUserMedia 사용');
+                    getUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+                }
+                // 방법 2: webkit 접두사 (Safari, 모바일 Safari 포함)
+                else if (navigator.webkitGetUserMedia) {
+                    console.log('방법 2: navigator.webkitGetUserMedia 사용 (Safari)');
+                    getUserMedia = function(constraints) {
+                        return new Promise((resolve, reject) => {
+                            navigator.webkitGetUserMedia(constraints, resolve, reject);
+                        });
+                    };
+                }
+                // 방법 3: moz 접두사 (구형 Firefox)
+                else if (navigator.mozGetUserMedia) {
+                    console.log('방법 3: navigator.mozGetUserMedia 사용 (Firefox)');
+                    getUserMedia = function(constraints) {
+                        return new Promise((resolve, reject) => {
+                            navigator.mozGetUserMedia(constraints, resolve, reject);
+                        });
+                    };
+                }
+                // 방법 4: 구형 API
+                else if (navigator.getUserMedia) {
+                    console.log('방법 4: navigator.getUserMedia (구형) 사용');
+                    getUserMedia = function(constraints) {
+                        return new Promise((resolve, reject) => {
+                            navigator.getUserMedia(constraints, resolve, reject);
+                        });
+                    };
+                }
+
+                if (!getUserMedia) {
+                    console.error('getUserMedia를 찾을 수 없습니다');
+                    console.error('mediaDevices:', navigator.mediaDevices);
+                    console.error('webkitGetUserMedia:', navigator.webkitGetUserMedia);
+                    console.error('mozGetUserMedia:', navigator.mozGetUserMedia);
+                    console.error('getUserMedia:', navigator.getUserMedia);
+                    throw new Error('이 브라우저는 카메라 접근을 지원하지 않습니다.\n\niOS Safari: 설정 > Safari > 카메라 허용 확인\niOS 14.5 이상 필요\n\n또는 Chrome 등 다른 브라우저를 사용해주세요.');
+                }
+
+                // 먼저 제약이 없는 기본 설정으로 시도, 그 다음 해상도 제약 추가
+                const constraints = [
+                    {
+                        video: true,
+                        audio: false
+                    },
+                    {
+                        video: {
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        },
+                        audio: false
+                    },
+                    {
+                        video: {
+                            facingMode: { ideal: "environment" },
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        },
+                        audio: false
+                    },
+                    {
+                        video: {
+                            width: { max: 640 },
+                            height: { max: 480 }
+                        },
+                        audio: false
                     }
-                });
+                ];
+
+                let stream = null;
+                let lastError = null;
+
+                for (let i = 0; i < constraints.length; i++) {
+                    try {
+                        console.log(`카메라 시도 ${i + 1}:`, constraints[i]);
+                        stream = await getUserMedia(constraints[i]);
+                        console.log(`카메라 시도 ${i + 1} 성공!`);
+                        break;
+                    } catch (err) {
+                        console.log(`카메라 시도 ${i + 1} 실패:`, err.name, err.message);
+                        lastError = err;
+                    }
+                }
+
+                if (!stream) {
+                    throw lastError || new Error('모든 카메라 설정 시도 실패');
+                }
+
+                console.log('카메라 스트림 획득 성공');
+
                 video.srcObject = stream;
-                video.play();
-                setupVideoAndCanvas();
+
+                // iOS Safari 호환성
+                video.onloadedmetadata = function() {
+                    console.log('메타데이터 로드됨');
+                    video.play().catch(err => {
+                        console.error('자동 재생 실패:', err);
+                    });
+                };
+
+                // Android 및 일반 호환성
+                video.onplaying = function() {
+                    console.log('비디오 재생 중...');
+                    setupVideoAndCanvas();
+                };
+
+                // play() 호출
+                video.play().catch(err => {
+                    console.error('비디오 재생 오류:', err);
+                });
+
             } catch (error) {
-                console.error("Error accessing the camera: ", error);
+                console.error("카메라 접근 오류:", error);
+                console.error("에러 이름:", error.name);
+                console.error("에러 메시지:", error.message);
+
+                let message = '';
+
+                // 에러 타입별 처리
+                if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                    message = '카메라 접근이 거부되었습니다.\n설정 > 개인정보 보호 > 카메라에서 Safari에 대한 접근을 허용해주세요.';
+                } else if (error.name === 'NotFoundError') {
+                    message = '사용 가능한 카메라가 없습니다.\n기기에 카메라가 연결되어 있는지 확인해주세요.';
+                } else if (error.name === 'NotReadableError') {
+                    message = '카메라가 다른 애플리케이션에서 사용 중입니다.\n다른 앱을 종료하고 다시 시도해주세요.';
+                } else if (error.name === 'SecurityError') {
+                    message = 'HTTPS를 통해 접속해주세요.\n(http는 카메라 접근이 불가능합니다)';
+                } else if (error.message && error.message.includes('브라우저는 카메라 접근을 지원하지 않습니다')) {
+                    message = error.message;
+                } else if (error.name === 'TypeError') {
+                    message = 'getUserMedia가 지원되지 않습니다.\nSafari 14.5 이상을 사용해주세요.';
+                } else {
+                    message = '카메라 초기화 실패: ' + error.message + '\n\n[디버깅]\n에러: ' + error.name;
+                }
+
+                console.error('최종 메시지:', message);
+                alert(message);
             }
         }
 
-        startCamera();
+        // 페이지 로드 시 카메라 시작을 지연 (iOS Safari 호환성)
+        let cameraStarted = false;
+
+        function initCameraWithDelay() {
+            if (!cameraStarted) {
+                cameraStarted = true;
+                // 약간의 지연을 주어 iOS에서 제대로 초기화되도록 함
+                setTimeout(() => {
+                    startCamera();
+                }, 500);
+            }
+        }
+
+        // 사용자 상호작용 후에 카메라 시작 시도 (iOS 요구사항)
+        document.addEventListener('touchstart', initCameraWithDelay, { once: true });
+        document.addEventListener('click', initCameraWithDelay, { once: true });
+
+        // 페이지 로드 완료 후에도 시도
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(initCameraWithDelay, 1000);
+            });
+        } else {
+            setTimeout(initCameraWithDelay, 1000);
+        }
 
         function startInference() {
             if (!isInferenceRunning) return;
