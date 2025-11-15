@@ -1,4 +1,4 @@
-# 🍣 SushiPlate AI - 실시간 초밥접시 감지 시스템
+# 🍣 SushiPlate AI - 실시간 초밥접시 감지 감지 및 계산 시스템
 
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.112.2-green.svg)](https://fastapi.tiangolo.com)
@@ -6,7 +6,18 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://docker.com)
 [![Google Cloud](https://img.shields.io/badge/Google%20Cloud-Run-4285F4.svg)](https://cloud.google.com)
 
-AI 기반 실시간 초밥접시 감지 및 가격 계산 웹 애플리케이션입니다. 컴퓨터 비전과 객체 추적 기술을 활용하여 초밥집에서 접시를 자동으로 인식하고 가격을 계산합니다.
+객체 탐지 모델 YOLO 기반 실시간 초밥접시 감지 및 가격 계산 웹 애플리케이션입니다. 카메라를 통해 초밥 접시를 자동으로 인식하고 가격을 계산함으로써 사람이 접시 하나하나 확인하여 계산하는 것보다 훨씬 빠른 시간 안에 계산을 할 수 있습니다.
+
+## 🎯 해결하고자 하는 문제
+
+### 문제점
+초밥 식당에서는 손님이 먹은 접시를 직원이 일일이 하나하나 계산해야 하므로 **시간이 오래 걸립니다**.
+
+### 기존 해결책의 한계
+RFID를 이용한 자동 계산 시스템도 있지만 **높은 도입 비용**이 발생합니다.
+
+### 우리의 솔루션
+**AI 비전 기술**을 활용하여 빠르고, 정확하고, 간편하게 접시를 자동으로 인식하고 계산하는 시스템을 구축합니다.
 
 ## ✨ 주요 기능
 
@@ -50,9 +61,7 @@ AI 기반 실시간 초밥접시 감지 및 가격 계산 웹 애플리케이션
 
 ### AI/ML
 - **Ultralytics YOLO**: 최신 객체 감지 모델
-  - YOLOv8n/s/m: 속도와 정확도의 균형
-  - YOLOv9s: 향상된 성능
-  - YOLO11s: 최신 아키텍처
+  - YOLOv8n/s/m, YOLOv9s, YOLO11s
 - **OpenCV**: 컴퓨터 비전 라이브러리
 - **PyTorch**: 딥러닝 프레임워크
 - **NumPy**: 수치 계산
@@ -107,31 +116,23 @@ websockets==13.0          # WebSocket 지원
                                    └─────────────────┘
 ```
 
-## 🚀 시작하기
-
-### 필수 조건
-- Python 3.11+
-- 웹캠이 있는 디바이스
-- 모던 웹 브라우저 (Chrome, Firefox, Safari)
-
-
 ## 📱 사용법
 
-### 기본 사용
+### 초밥 접시 실시간 추론
 1. **모델 선택**: 속도와 정확도에 따라 YOLO 모델 선택
-2. **FPS 설정**: 처리 속도 조절 (1-30 FPS)
+2. **FPS 설정**: 처리 속도 조절 (1-30 FPS), 기본 5 FPS
 3. **실시간 감지**: "실시간 감지 시작" 버튼 클릭
 4. **3초 정밀 감지**: 더 정확한 결과를 위한 짧은 분석
 
-### 고급 기능
-- **수동 조정**: 감지 결과 수정 및 접시 추가/삭제
-- **가격 변경**: 드롭다운에서 접시 타입 변경
+### 검토
+- **추론 결과 검토**: 카메라 화면에서 해당 접시 옆에 추론 결과를 접시 색상으로 표시함으로써 결과를 한 눈에 확인 가능
+- **수동 조정**: 감지 결과 검토 후 직접 수정 가능. 쌓인 접시 순서대로 표시되며 각 칸마다 접시 추가/삭제 가능
 - **실시간 모니터링**: 연결 상태 및 처리 상태 확인
 
 ## 🌐 배포
 
 ### Google Cloud Run
-프로젝트는 Google Cloud Run에 자동 배포되도록 설정되어 있습니다.
+프로젝트는 Google Cloud Run에 자동 배포되도록 설정되어 있음.
 
 1. **Cloud Build 설정**
 ```yaml
@@ -140,37 +141,12 @@ websockets==13.0          # WebSocket 지원
 # Docker 이미지 빌드 및 배포
 ```
 
-2. **배포 명령**
-```bash
-gcloud builds submit --config cloudbuild.yaml
-```
-
-## 🔧 커스터마이징
-
-### 새로운 접시 타입 추가
-```javascript
-// template/index-fast.html
-const platePrices = {
-    'new-plate': 5500,  // 새로운 접시 타입 추가
-    // ... 기존 타입들
-};
-```
-
-### 모델 변경
-```python
-# app-fast.py
-model_paths = {
-    "custom-model": "path/to/your/model.pt",
-    # ... 기존 모델들
-}
-```
-
 ## 📈 성능
 
-### 처리 속도
-- **YOLOv8n**: ~30 FPS (가벼움)
-- **YOLOv8s**: ~20 FPS (균형)
-- **YOLOv8m**: ~15 FPS (정확함)
+### 처리 속도 및 정확도
+- **YOLOv8n**: ~30 FPS (가장 빠르나 정확도가 다소 떨어짐. 접시 색상이 다르거나 일부 접시를 추론하지 못 하는 경우가 있음)
+- **YOLOv8s**: ~20 FPS (실시간 추론 시 딜레이가 적으면서 결과 수정이 필요없을 정도로 정확도가 꽤 높음.)
+- **YOLOv8m**: ~5 FPS (추론 결과가 정확한 편이나 추론 속도가 다소 느림.)
 - **YOLO11s**: ~25 FPS (최신)
 
 ### 정확도
@@ -178,19 +154,6 @@ model_paths = {
 - **3초 정밀 감지**: ~95% 정확도
 - **노이즈 필터링**: 오감지 90% 감소
 
-## 🤝 기여하기
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
-
-## 🙏 감사의 말
 
 - [Ultralytics](https://ultralytics.com) - YOLO 모델 제공
 - [FastAPI](https://fastapi.tiangolo.com) - 훌륭한 웹 프레임워크
