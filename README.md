@@ -19,6 +19,17 @@
 | **기술스택** | Python, YOLO, FastAPI, GCP |
 | **GitHub** | [therapeuti/sushiplates-AI](https://github.com/therapeuti/sushiplates-AI) |
 
+> **📝 프로젝트 개발 과정**
+>
+> 초기 팀 프로젝트는 YOLO 기반 초밥 접시 감지 백엔드 서버 구축과 Flutter 모바일 앱 개발을 목표로 진행되었습니다. 본 GitHub 저장소에 올린 코드는 팀 프로젝트의 성과를 바탕으로 **개인적으로 다음 사항들을 추가 구현하여 완성한 결과물입니다**:
+>
+> - **모던 웹 프론트엔드**: HTML5, CSS3, JavaScript로 구현한 반응형 UI/UX (모바일/태블릿/데스크톱 최적화)
+> - **실시간 비디오 렌더링**: Canvas API와 MediaDevices API를 활용한 크로스 플랫폼 카메라 통합
+> - **배포 자동화**: Docker 컨테이너화 및 GCP Cloud Build CI/CD 파이프라인 구축
+> - **기술 선택 및 최적화**: 아키텍처 전환(온디바이스 → 서버 기반), 모델 벤치마킹, 성능 튜닝
+
+
+
 ## 🎯 해결하고자 하는 문제
 
 ### 문제점
