@@ -1,4 +1,4 @@
-# 🍣 SushiPlate AI - 실시간 초밥접시 감지 감지 및 계산 시스템
+# 🍣 SushiPlate AI - 실시간 초밥접시 감지 및 계산 시스템
 
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.112.2-green.svg)](https://fastapi.tiangolo.com)
@@ -6,7 +6,18 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://docker.com)
 [![Google Cloud](https://img.shields.io/badge/Google%20Cloud-Run-4285F4.svg)](https://cloud.google.com)
 
-객체 탐지 모델 YOLO 기반 실시간 초밥접시 감지 및 가격 계산 웹 애플리케이션입니다. 카메라를 통해 초밥 접시를 자동으로 인식하고 가격을 계산함으로써 사람이 접시 하나하나 확인하여 계산하는 것보다 훨씬 빠른 시간 안에 계산을 할 수 있습니다.
+**회전초밥 접시를 촬영하면 AI가 자동으로 인식하여 결제금액을 계산하는 시스템입니다.**
+
+객체 탐지 모델 YOLO 기반 실시간 초밥접시 감지 및 가격 계산 웹 애플리케이션으로, 카메라를 통해 초밥 접시를 자동으로 인식하고 가격을 계산합니다. 직원이 접시를 일일이 계산하는 것보다 **10배 이상 빠르고 정확한 결제 처리**가 가능합니다.
+
+## 📋 프로젝트 정보
+
+| 항목 | 내용 |
+|------|------|
+| **기간** | 2024.09 ~ 2024.10 |
+| **팀 구성** | 4명 (PM, AI/백엔드, 배포) |
+| **기술스택** | Python, YOLO, FastAPI, GCP |
+| **GitHub** | [therapeuti/sushiplates-AI](https://github.com/therapeuti/sushiplates-AI) |
 
 ## 🎯 해결하고자 하는 문제
 
@@ -18,6 +29,37 @@ RFID를 이용한 자동 계산 시스템도 있지만 **높은 도입 비용**�
 
 ### 우리의 솔루션
 **AI 비전 기술**을 활용하여 빠르고, 정확하고, 간편하게 접시를 자동으로 인식하고 계산하는 시스템을 구축합니다.
+
+## ⚙️ 구현한 핵심 기능
+
+### 1️⃣ 다양한 YOLO 모델 파인튜닝
+- YOLOv8n, YOLOv8s, YOLOv8m, YOLOv9s, YOLO11s 등 다양한 모델 지원
+- 속도와 정확도의 트레이드오프를 고려한 모델 선택
+- 학습 데이터 증가 및 파라미터 튜닝을 통한 정확도 개선
+
+### 2️⃣ UX 중심의 프론트엔드 설계
+- **실시간 결과 검증**: 카메라 화면에서 추론 결과를 접시 색상과 일치시켜 한눈에 판별 가능
+- **빠른 수정 인터페이스**: 한두 번의 터치로 감지 결과 수정 가능
+- **반응형 디자인**: 모바일, 태블릿, 데스크톱 모든 기기 최적화
+
+### 3️⃣ FastAPI + WebSocket 기반 실시간 서버
+- **비동기 추론**: WebSocket을 통한 스트리밍 시 딜레이 최소화 (1초 내)
+- **멀티스레드 처리**: ThreadPoolExecutor를 활용한 병렬 이미지 처리
+- **실시간 통신**: 클라이언트-서버 간 양방향 통신으로 응답성 극대화
+
+### 4️⃣ GCP Cloud Build 자동화 배포
+- CI/CD 파이프라인 구성으로 자동 빌드 및 배포
+- Google Cloud Storage에 모델 파일 관리
+- Cloud Run을 활용한 서버리스 인프라 운영
+
+## 📊 성과
+
+| 지표 | 결과 |
+|------|------|
+| **추론 정확도** | 90% 이상 |
+| **실시간 처리 속도** | 1초 내 |
+| **최종 결제까지 소요 시간** | 최장 10초 |
+| **기존 수동 계산 대비 효율성** | 10배 이상 개선 |
 
 ## ✨ 주요 기능
 
@@ -149,25 +191,3 @@ websockets==13.0          # WebSocket 지원
 - **YOLOv8m**: ~5 FPS (추론 결과가 정확한 편이나 추론 속도가 다소 느림.)
 - **YOLO11s**: ~25 FPS (최신)
 
-### 정확도
-- **단일 프레임**: ~85% 정확도
-- **3초 정밀 감지**: ~95% 정확도
-- **노이즈 필터링**: 오감지 90% 감소
-
-## 🤝 기여하기
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
-
-## 🙏 감사의 말
-
-- [Ultralytics](https://ultralytics.com) - YOLO 모델 제공
-- [FastAPI](https://fastapi.tiangolo.com) - 훌륭한 웹 프레임워크
-- [Google Cloud](https://cloud.google.com) - 클라우드 인프라
