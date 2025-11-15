@@ -93,7 +93,7 @@ websockets==13.0          # WebSocket 지원
 │   Frontend      │◄──────────────►│   FastAPI       │
 │                 │                │   Backend       │
 │ • HTML5 Canvas  │                │                 │
-│ • WebRTC        │                │ • WebSocket     │
+│ • getUserMedia  │                │ • WebSocket     │
 │ • JavaScript    │                │ • ThreadPool    │
 └─────────────────┘                └─────────────────┘
                                             │
