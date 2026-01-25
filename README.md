@@ -3,7 +3,6 @@
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.112.2-green.svg)](https://fastapi.tiangolo.com)
 [![YOLO](https://img.shields.io/badge/YOLO-v8%2Fv9%2Fv11-orange.svg)](https://ultralytics.com)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://docker.com)
 [![Google Cloud](https://img.shields.io/badge/Google%20Cloud-Run-4285F4.svg)](https://cloud.google.com)
 
 **회전초밥 접시를 촬영하면 AI가 자동으로 인식하여 결제금액을 계산하는 시스템입니다.**
