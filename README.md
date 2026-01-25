@@ -76,12 +76,9 @@ RFID를 이용한 자동 계산 시스템도 있지만 **높은 도입 비용**�
 - **WebSocket**: 실시간 양방향 통신
 - **ThreadPoolExecutor**: 멀티스레딩 이미지 처리
 
-### AI/ML
+### AI
 - **Ultralytics YOLO**: 최신 객체 감지 모델
   - YOLOv8n/s/m, YOLOv9s, YOLO11s
-- **OpenCV**: 컴퓨터 비전 라이브러리
-- **PyTorch**: 딥러닝 프레임워크
-- **NumPy**: 수치 계산
 
 ### Frontend
 - **HTML5**: 시맨틱 마크업
@@ -94,7 +91,6 @@ RFID를 이용한 자동 계산 시스템도 있지만 **높은 도입 비용**�
 - **MediaDevices API**: 웹캠 접근
 
 ### Infrastructure
-- **Docker**: 컨테이너화
 - **Google Cloud Run**: 서버리스 배포
 - **Google Cloud Build**: CI/CD 파이프라인
 - **Google Cloud Storage**: 모델 파일 저장
